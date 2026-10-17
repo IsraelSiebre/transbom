@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importação de Mão de Obra</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #f5f7fb;
+            color: #182335;
+            font-family: Arial, sans-serif;
+            padding: 48px 24px;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #687487;
+            margin-bottom: 32px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e1e6ed;
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+
+        .upload-area {
+            border: 2px dashed #bac6d7;
+            border-radius: 10px;
+            padding: 42px 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #fafcff;
+        }
+
+        .upload-area:hover {
+            border-color: #2563eb;
+        }
+
+        .upload-area strong {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .upload-area p {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .filename {
+            margin-top: 16px;
+            color: #2563eb;
+            font-size: 14px;
+        }
+
+        button {
+            background: #2563eb;
+            border: none;
+            padding: 13px 24px;
+            border-radius: 7px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .secondary {
+            background: #e8eef8;
+            color: #1d4ed8;
+        }
+
+        .status {
+            margin-top: 18px;
+            font-size: 14px;
+        }
+
+        .error { color: #dc2626; }
+        .success { color: #15803d; }
+
+        .hidden { display: none; }
+
+        .table-container {
+            overflow-x: auto;
+            max-height: 550px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+        }
+
+        th {
+            background: #f8fafc;
+            position: sticky;
+            top: 0;
+        }
+
+        .summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+    </style>
+</head>
+
+<body>
+<main>
+
+    <h1>Importação de Mão de Obra</h1>
+    <p class="subtitle">
+        Envie a planilha de extrato para processar os dados.
+    </p>
+
+    <div class="card">
+
+        <form id="uploadForm"
+              th:action="@{/extracao/processar}"
+              method="post"
+              enctype="multipart/form-data">
+
+            <label class="upload-area" for="arquivo">
+                <strong>Selecionar arquivo Excel</strong>
+                <p>Formatos aceitos: XLSX e XLS</p>
+                <p class="filename" id="nomeArquivo">
+                    Nenhum arquivo selecionado
+                </p>
+            </label>
+
+            <input type="file"
+                   id="arquivo"
+                   name="arquivo"
+                   accept=".xlsx,.xls"
+                   required>
+
+            <button id="btnEnviar" type="submit">
+                Processar arquivo
+            </button>
+
+            <div class="status" id="status"></div>
+        </form>
+
+    </div>
+
+    <div class="card hidden" id="resultado">
+
+        <div class="summary">
+            <div>
+                <h2>Resultado do processamento</h2>
+                <p id="totalRegistros"></p>
+            </div>
+
+            <button class="secondary"
+                    id="btnDownload"
+                    type="button">
+                Baixar JSON
+            </button>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Código</th>
+                    <th>Descrição</th>
+                    <th>Valor</th>
+                </tr>
+                </thead>
+                <tbody id="tabelaResultado"></tbody>
+            </table>
+        </div>
+
+        <p style="color:#64748b;font-size:13px">
+            Exibindo os primeiros 20 registros.
+            O JSON contém todos os registros.
+        </p>
+
+    </div>
+
+</main>
+
+<script th:inline="javascript">
+    const form = document.getElementById("uploadForm");
+    const arquivo = document.getElementById("arquivo");
+    const nomeArquivo = document.getElementById("nomeArquivo");
+    const status = document.getElementById("status");
+    const btnEnviar = document.getElementById("btnEnviar");
+    const resultado = document.getElementById("resultado");
+    const tabela = document.getElementById("tabelaResultado");
+
+    let dadosProcessados = [];
+
+    arquivo.addEventListener("change", () => {
+        nomeArquivo.textContent = arquivo.files[0]?.name
+            || "Nenhum arquivo selecionado";
+    });
+
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        if (!arquivo.files.length) return;
+
+        btnEnviar.disabled = true;
+        btnEnviar.textContent = "Processando...";
+        status.textContent = "Enviando e processando arquivo...";
+        status.className = "status";
+        resultado.classList.add("hidden");
+
+        try {
+            const formData = new FormData(form);
+
+            const response = await fetch(form.action, {
+                method: "POST",
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error(
+                    "Falha no processamento. HTTP " + response.status
+                );
+            }
+
+            dadosProcessados = await response.json();
+
+            status.textContent = "Processamento concluído!";
+            status.className = "status success";
+
+            document.getElementById("totalRegistros")
+                .textContent =
+                dadosProcessados.length + " registros gerados.";
+
+            tabela.replaceChildren();
+
+            dadosProcessados.slice(0, 20).forEach(linha => {
+                const tr = document.createElement("tr");
+
+                [
+                    linha.nome,
+                    linha.cod,
+                    linha.descricao,
+                    linha.valor
+                ].forEach(valor => {
+                    const td = document.createElement("td");
+                    td.textContent = valor ?? "";
+                    tr.appendChild(td);
+                });
+
+                tabela.appendChild(tr);
+            });
+
+            resultado.classList.remove("hidden");
+
+        } catch (error) {
+            status.textContent = error.message;
+            status.className = "status error";
+
+        } finally {
+            btnEnviar.disabled = false;
+            btnEnviar.textContent = "Processar arquivo";
+        }
+    });
+
+    document.getElementById("btnDownload")
+        .addEventListener("click", () => {
+
+            const blob = new Blob(
+                [JSON.stringify(dadosProcessados, null, 2)],
+                { type: "application/json" }
+            );
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+
+            a.href = url;
+            a.download = "maodeobra_final.json";
+            a.click();
+
+            URL.revokeObjectURL(url);
+        });
+</script>
+
+</body>
+</html>
