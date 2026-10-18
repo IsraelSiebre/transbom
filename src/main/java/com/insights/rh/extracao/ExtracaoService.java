@@ -1,11 +1,16 @@
 package com.insights.rh.extracao;
 
+import com.insights.rh.repository.FuncionarioImportacaoRepository;
+import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,238 +19,210 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
-import java.util.TreeMap;
+import java.util.Set;
 
 @Service
+@RequiredArgsConstructor
 public class ExtracaoService {
 
-    public List<LinhaMaoDeObra> processar(MultipartFile arquivo) throws IOException {
-        List<Map<String, Object>> df = lerExcel(arquivo);
+    private static final Logger log = LoggerFactory.getLogger(ExtracaoService.class);
+    private static final BigDecimal ALIQUOTA_RAT = new BigDecimal("0.0388");
+    private static final BigDecimal ALIQUOTA_TERCEIROS = new BigDecimal("0.058");
+    private final FuncionarioImportacaoRepository repository;
 
-        // df.drop(columns=[...])
-        List<String> colunasRemover = List.of(
-                "codi_emp", "nome_emp", "cgce_emp", "tins_emp",
-                "cp_tipo_calc", "cp_competencia", "cp_data_hora",
-                "cp_quebra", "cp_pagina_ini", "cp_label", "cp_codi_epr"
-        );
-
-        for (String coluna : colunasRemover) {
-            if (!df.isEmpty() && !df.get(0).containsKey(coluna)) {
-                throw new IllegalArgumentException("Coluna não encontrada: " + coluna);
-            }
-        }
-        for (Map<String, Object> linha : df) {
-            for (String coluna : colunasRemover) {
-                linha.remove(coluna);
-            }
+    public List<FuncionarioImportacao> processar(MultipartFile arquivo) throws IOException {
+        if (arquivo == null || arquivo.isEmpty()) {
+            throw new IllegalArgumentException("Selecione um arquivo Excel não vazio.");
         }
 
-        // df.groupby("cp_nome_epr"): grupos ordenados por nome.
-        Map<String, List<Map<String, Object>>> listaDF = new TreeMap<>();
-        for (Map<String, Object> linha : df) {
-            Object nome = linha.get("cp_nome_epr");
-            if (nome == null || ehNaN(nome)) {
+        List<Map<String, Object>> linhas = lerExcel(arquivo);
+        Map<String, List<Map<String, Object>>> grupos = new LinkedHashMap<>();
+
+        for (Map<String, Object> linha : linhas) {
+            String nome = texto(linha.get("cp_nome_epr"));
+            if (nome == null) {
                 continue;
             }
-            listaDF.computeIfAbsent(texto(nome), chave -> new ArrayList<>()).add(linha);
+
+            String cpf = texto(linha.get("cp_cpf"));
+            String competencia = texto(linha.get("cp_competencia"));
+            // O CPF identifica o funcionário; competência separa folhas de meses distintos.
+            // Sem CPF, usa-se o nome como alternativa.
+            String identidade = cpf != null ? "CPF:" + cpf : "NOME:" + nome;
+            String chave = identidade + "|" + (competencia != null ? competencia : "SEM_COMPETENCIA");
+            grupos.computeIfAbsent(chave, ignorado -> new ArrayList<>()).add(linha);
         }
 
-        List<LinhaMaoDeObra> listadict = new ArrayList<>();
+        List<FuncionarioImportacao> funcionarios = new ArrayList<>();
 
-        for (List<Map<String, Object>> dfl : listaDF.values()) {
-            String name = texto(dfl.get(0).get("cp_nome_epr"));
-            String dataP = name + " CPF:" + texto(dfl.get(0).get("cp_cpf"))
-                    + " CTPS:xx PIS/PASEP:xx";
+        for (List<Map<String, Object>> grupo : grupos.values()) {
+            FuncionarioImportacao funcionario = new FuncionarioImportacao();
+            Map<String, Object> primeiraLinha = grupo.get(0);
+            funcionario.setNome(texto(primeiraLinha.get("cp_nome_epr")));
+            funcionario.setCpf(texto(primeiraLinha.get("cp_cpf")));
 
-            listadict.add(new LinhaMaoDeObra(name, name, dataP, 0));
-
-            // Ganhos
-            for (Map<String, Object> linha : dfl) {
-                Object row = linha.get("cp_nome_eve_p");
-                if (!texto(row).equals("nan")) {
-                    Map<String, Object> primeira = primeiraOcorrencia(dfl, "cp_nome_eve_p", row);
-                    Object cod = primeira.get("cp_codi_eve_p");
-                    String descricao = texto(cod) + " - "
-                            + texto(primeira.get("cp_nome_eve_p")) + " "
-                            + texto(primeira.get("cp_eve_inf_p")) + " "
-                            + texto(primeira.get("cp_eve_val_p"));
-                    listadict.add(new LinhaMaoDeObra(
-                            name, cod, descricao, primeira.get("cp_eve_val_p")));
-                }
+            Set<String> eventosProcessados = new HashSet<>();
+            for (Map<String, Object> linha : grupo) {
+                importarRubrica(funcionario, linha, "cp_codi_eve_p", "cp_eve_val_p",
+                        "P:", eventosProcessados);
+                importarRubrica(funcionario, linha, "cp_codi_eve_d", "cp_eve_val_d",
+                        "D:", eventosProcessados);
             }
 
-            // Descontos
-            for (Map<String, Object> linha : dfl) {
-                Object row = linha.get("cp_nome_eve_d");
-                if (!texto(row).equals("nan")) {
-                    Map<String, Object> primeira = primeiraOcorrencia(dfl, "cp_nome_eve_d", row);
-                    Object cod = primeira.get("cp_codi_eve_d");
-                    String descricao = texto(cod) + " - "
-                            + texto(primeira.get("cp_nome_eve_d")) + " "
-                            + texto(primeira.get("cp_eve_inf_d")) + " "
-                            + texto(primeira.get("cp_eve_val_d"));
-                    listadict.add(new LinhaMaoDeObra(
-                            name, cod, descricao, primeira.get("cp_eve_val_d")));
-                }
+            BigDecimal baseInss = primeiroValor(grupo, "cp_bas_inss");
+            BigDecimal baseIrrf = primeiroValor(grupo, "cp_bas_irrf");
+            BigDecimal baseFgts = primeiroValor(grupo, "cp_bas_fgts");
+            BigDecimal fgts = primeiroValor(grupo, "cp_val_fgts");
+            BigDecimal vencimentos = primeiroValor(grupo, "cp_tot_prov");
+            BigDecimal descontos = primeiroValor(grupo, "cp_tot_desc");
+
+            funcionario.setBaseInss(baseInss);
+            funcionario.setBaseIrrf(baseIrrf);
+            funcionario.setBaseFgts(baseFgts);
+            funcionario.setFgtsRecolher(fgts);
+            funcionario.setTotalVencimentos(vencimentos);
+            funcionario.setTotalDescontos(descontos);
+
+            if (vencimentos != null && descontos != null) {
+                funcionario.setTotalLiquido(vencimentos.subtract(descontos));
             }
 
-            // Base INSS
-            Object baseINSS = 0;
-            for (Map<String, Object> linha : dfl) {
-                Object row = linha.get("cp_bas_inss");
-                if (!iguais(row, 0)) {
-                    Map<String, Object> primeira = primeiraOcorrencia(dfl, "cp_bas_inss", row);
-                    Object valor = primeira.get("cp_bas_inss");
-                    listadict.add(new LinhaMaoDeObra(
-                            name, "BASE INSS", "BASE INSS - " + texto(valor), valor));
-                    baseINSS = texto(valor).replace(",", ".");
-                }
+            // Estimativas: confirme as alíquotas e as exceções da folha de origem.
+            // A planilha pode registrar encargos zerados mesmo com base positiva.
+            if (baseInss != null) {
+                funcionario.setSeguroAcidenteTrabalho(
+                        baseInss.multiply(ALIQUOTA_RAT).setScale(2, RoundingMode.HALF_UP));
+                funcionario.setValorOutrasEntidades(
+                        baseInss.multiply(ALIQUOTA_TERCEIROS).setScale(2, RoundingMode.HALF_UP));
             }
 
-            // Base IRRF (grafia IRFF preservada do Python)
-            for (Map<String, Object> linha : dfl) {
-                Object row = linha.get("cp_bas_irrf");
-                if (!iguais(row, 0)) {
-                    Map<String, Object> primeira = primeiraOcorrencia(dfl, "cp_bas_irrf", row);
-                    Object valor = primeira.get("cp_bas_irrf");
-                    listadict.add(new LinhaMaoDeObra(
-                            name, "BASE IRFF", "BASE IRFF - " + texto(valor), valor));
-                }
-            }
-
-            // Base FGTS
-            for (Map<String, Object> linha : dfl) {
-                Object row = linha.get("cp_bas_fgts");
-                if (!iguais(row, 0)) {
-                    Map<String, Object> primeira = primeiraOcorrencia(dfl, "cp_bas_fgts", row);
-                    Object valor = primeira.get("cp_bas_fgts");
-                    listadict.add(new LinhaMaoDeObra(
-                            name, "BASE FGTS", "BASE FGTS - " + texto(valor), valor));
-                }
-            }
-
-            // FGTS a recolher
-            for (Map<String, Object> linha : dfl) {
-                Object row = linha.get("cp_val_fgts");
-                if (!iguais(row, 0)) {
-                    Map<String, Object> primeira = primeiraOcorrencia(dfl, "cp_val_fgts", row);
-                    Object valor = primeira.get("cp_val_fgts");
-                    listadict.add(new LinhaMaoDeObra(
-                            name, "FGTS A RECOLHER", "FGTS A RECOLHER - " + texto(valor), valor));
-                }
-            }
-
-            // RAT - Seguro acidente de trabalho
-            double rat = (Double.parseDouble(texto(baseINSS)) * 3.88) / 100;
-            listadict.add(new LinhaMaoDeObra(
-                    name, "SEG.ACIDENTE TRABALHO",
-                    "SEG.ACIDENTE TRABALHO 3,88% " + formatarFloat(rat),
-                    formatarFloat(rat)));
-
-            // INSS terceiros - Outras entidades
-            double insst = (Double.parseDouble(texto(baseINSS)) * 5.8) / 100;
-            listadict.add(new LinhaMaoDeObra(
-                    name, "VALOR OUTRAS ENTIDADES",
-                    "VALOR OUTRAS ENTIDADES 5,80% " + formatarFloat(insst),
-                    formatarFloat(insst)));
-
-            // Total proventos
-            for (Map<String, Object> linha : dfl) {
-                Object row = linha.get("cp_tot_prov");
-                if (!iguais(row, 0)) {
-                    Map<String, Object> primeira = primeiraOcorrencia(dfl, "cp_tot_prov", row);
-                    Object valor = primeira.get("cp_tot_prov");
-                    listadict.add(new LinhaMaoDeObra(
-                            name, "TOTAL DE VENCIMENTOS",
-                            "TOTAL DE VENCIMENTOS (+): " + texto(valor), valor));
-                }
-            }
-
-            // Total descontos
-            for (Map<String, Object> linha : dfl) {
-                Object row = linha.get("cp_tot_desc");
-                if (!iguais(row, 0)) {
-                    Map<String, Object> primeira = primeiraOcorrencia(dfl, "cp_tot_desc", row);
-                    Object valor = primeira.get("cp_tot_desc");
-                    listadict.add(new LinhaMaoDeObra(
-                            name, "TOTAL DE DESCONTOS",
-                            "TOTAL DE DESCONTOS (-): " + texto(valor), valor));
-                }
-            }
-
-            // Total líquido
-            for (Map<String, Object> linha : dfl) {
-                Object row = linha.get("cp_tot_liq");
-                if (!iguais(row, 0)) {
-                    Map<String, Object> primeira = primeiraOcorrencia(dfl, "cp_tot_liq", row);
-                    Object valor = primeira.get("cp_tot_liq");
-                    listadict.add(new LinhaMaoDeObra(
-                            name, "TOTAL LIQUIDO",
-                            "TOTAL LIQUIDO (=): " + texto(valor), valor));
-                }
-            }
+            funcionarios.add(funcionario);
         }
 
-        return listadict;
+        repository.saveAll(funcionarios);
+
+        return funcionarios;
     }
 
-    private String formatarFloat(double valor) {
-        // float formatado com .2f no Python (arredondamento HALF_EVEN)
-        if (Double.isNaN(valor)) return "nan";
-        if (Double.isInfinite(valor)) return valor < 0 ? "-inf" : "inf";
-        return new BigDecimal(valor)
-                .setScale(2, RoundingMode.HALF_EVEN)
-                .toPlainString()
-                .replace('.', ',');
+    private void importarRubrica(
+            FuncionarioImportacao funcionario,
+            Map<String, Object> linha,
+            String colunaCodigo,
+            String colunaValor,
+            String prefixo,
+            Set<String> eventosProcessados
+    ) {
+        String codigo = normalizarCodigo(linha.get(colunaCodigo));
+        BigDecimal valor = converterBigDecimal(linha.get(colunaValor));
+        if (codigo == null || valor == null) {
+            return;
+        }
+
+        // Mantém apenas a primeira ocorrência de cada código em proventos/descontos.
+        if (!eventosProcessados.add(prefixo + codigo)) {
+            return;
+        }
+
+        try {
+            funcionario.setValorPorCodigo(codigo, valor);
+        } catch (IllegalArgumentException ex) {
+            log.warn("Rubrica não mapeada: código={}, funcionário={}",
+                    codigo, funcionario.getNome());
+        }
     }
 
-    private Map<String, Object> primeiraOcorrencia(
-            List<Map<String, Object>> linhas, String coluna, Object valor) {
+    private BigDecimal primeiroValor(List<Map<String, Object>> linhas, String coluna) {
+        BigDecimal primeiroZero = null;
         for (Map<String, Object> linha : linhas) {
-            if (iguais(linha.get(coluna), valor)) {
-                return linha;
+            BigDecimal valor = converterBigDecimal(linha.get(coluna));
+            if (valor == null) {
+                continue;
             }
+            if (valor.signum() != 0) {
+                return valor;
+            }
+            primeiroZero = valor;
         }
-        throw new IndexOutOfBoundsException("Nenhuma ocorrência encontrada");
+        return primeiroZero;
     }
 
-    private boolean iguais(Object a, Object b) {
-        if (a instanceof Number na && b instanceof Number nb) {
-            return na.doubleValue() == nb.doubleValue();
+    private String normalizarCodigo(Object valor) {
+        String codigo = texto(valor);
+        if (codigo == null) {
+            return null;
         }
-        return Objects.equals(a, b);
+        return codigo.replaceFirst("\\.0+$", "").toUpperCase(Locale.ROOT);
     }
 
-    private boolean ehNaN(Object valor) {
-        return valor instanceof Double numero && numero.isNaN();
+    private BigDecimal converterBigDecimal(Object valor) {
+        if (valor == null) {
+            return null;
+        }
+        if (valor instanceof Number numero) {
+            double valorNumerico = numero.doubleValue();
+            return Double.isFinite(valorNumerico) ? BigDecimal.valueOf(valorNumerico) : null;
+        }
+
+        String texto = texto(valor);
+        if (texto == null) {
+            return null;
+        }
+        if (texto.contains(",")) {
+            texto = texto.replace(".", "").replace(",", ".");
+        }
+        return new BigDecimal(texto);
     }
 
     private String texto(Object valor) {
-        if (valor == null || ehNaN(valor)) return "nan";
-        return String.valueOf(valor);
+        if (valor == null) {
+            return null;
+        }
+        if (valor instanceof Double numero && !Double.isFinite(numero)) {
+            return null;
+        }
+        String texto = valor.toString().trim();
+        return texto.isEmpty() || "nan".equalsIgnoreCase(texto) ? null : texto;
     }
 
     private List<Map<String, Object>> lerExcel(MultipartFile arquivo) throws IOException {
         List<Map<String, Object>> registros = new ArrayList<>();
+        DataFormatter formatador = new DataFormatter(new Locale("pt", "BR"));
+
         try (InputStream entrada = arquivo.getInputStream();
              Workbook workbook = WorkbookFactory.create(entrada)) {
-            Sheet sheet = workbook.getSheetAt(0);
-            Row cabecalho = sheet.getRow(0);
-            List<String> colunas = new ArrayList<>();
-            for (Cell celula : cabecalho) {
-                colunas.add(celula.getStringCellValue());
+
+            Sheet planilha = workbook.getSheetAt(0);
+            Row cabecalho = planilha.getRow(0);
+            if (cabecalho == null) {
+                throw new IllegalArgumentException("A planilha não possui cabeçalho.");
             }
 
-            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
-                Row row = sheet.getRow(i);
-                if (row == null) continue;
+            List<String> colunas = new ArrayList<>();
+            for (int j = 0; j < cabecalho.getLastCellNum(); j++) {
+                colunas.add(formatador.formatCellValue(cabecalho.getCell(j)).trim());
+            }
+            if (!colunas.contains("cp_nome_epr")) {
+                throw new IllegalArgumentException("Coluna obrigatória ausente: cp_nome_epr");
+            }
+
+            for (int i = 1; i <= planilha.getLastRowNum(); i++) {
+                Row linha = planilha.getRow(i);
+                if (linha == null) {
+                    continue;
+                }
                 Map<String, Object> registro = new LinkedHashMap<>();
                 for (int j = 0; j < colunas.size(); j++) {
-                    registro.put(colunas.get(j), lerValorCelula(row.getCell(j)));
+                    String coluna = colunas.get(j);
+                    Cell celula = linha.getCell(j);
+                    Object valor = "cp_cpf".equals(coluna)
+                            ? formatador.formatCellValue(celula)
+                            : lerValorCelula(celula);
+                    registro.put(coluna, valor);
                 }
                 registros.add(registro);
             }
@@ -254,21 +231,19 @@ public class ExtracaoService {
     }
 
     private Object lerValorCelula(Cell celula) {
-        if (celula == null) return Double.NaN;
+        if (celula == null) {
+            return null;
+        }
         CellType tipo = celula.getCellType();
         if (tipo == CellType.FORMULA) {
             tipo = celula.getCachedFormulaResultType();
         }
         return switch (tipo) {
             case NUMERIC -> celula.getNumericCellValue();
-            case STRING -> {
-                String valor = celula.getStringCellValue();
-                yield valor.isEmpty() ? Double.NaN : valor;
-            }
+            case STRING -> celula.getStringCellValue();
             case BOOLEAN -> celula.getBooleanCellValue();
-            case BLANK, ERROR -> Double.NaN;
-            default -> Double.NaN;
+            case BLANK, ERROR -> null;
+            default -> null;
         };
     }
 }
-

@@ -1,6 +1,7 @@
 package com.insights.rh;
 
 import com.insights.rh.extracao.ExtracaoService;
+import com.insights.rh.extracao.FuncionarioImportacao;
 import com.insights.rh.extracao.LinhaMaoDeObra;
 
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,7 @@ public class ControllerTeste {
 
     @PostMapping("/extracao/processar")
     @ResponseBody
-    public ResponseEntity<List<LinhaMaoDeObra>> processar(
+    public ResponseEntity<List<FuncionarioImportacao>> processar(
             @RequestParam("arquivo") MultipartFile arquivo
     ) throws IOException {
 
@@ -41,9 +42,12 @@ public class ControllerTeste {
         );
 
         try {
-            List<LinhaMaoDeObra> resultado =
+            List<FuncionarioImportacao> resultado =
                     extracaoService.processar(arquivo);
 
+            resultado.forEach(f -> {
+                System.out.println(f.toString());
+            });
             return ResponseEntity.ok(resultado);
 
         } finally {
