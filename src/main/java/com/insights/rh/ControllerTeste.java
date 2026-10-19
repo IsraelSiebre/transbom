@@ -1,8 +1,8 @@
 
 package com.insights.rh;
 
-import com.insights.rh.extracao.ConciliacaoPagamentoService;
-import com.insights.rh.extracao.FuncionarioImportacao;
+import com.insights.rh.importacao.ConciliacaoPagamentoService;
+import com.insights.rh.importacao.model.FuncionarioImportacao;
 
 import lombok.RequiredArgsConstructor;
 

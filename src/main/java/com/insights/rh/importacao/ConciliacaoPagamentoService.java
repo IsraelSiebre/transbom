@@ -1,5 +1,6 @@
-package com.insights.rh.extracao;
+package com.insights.rh.importacao;
 
+import com.insights.rh.importacao.model.FuncionarioImportacao;
 import com.insights.rh.repository.FuncionarioImportacaoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -9,19 +10,17 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.Normalizer;
-import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class ConciliacaoPagamentoService {
 
-    private final ExtracaoFolhaService extracaoFolhaService;
-    private final ExtracaoPorForaService extracaoPorForaService;
+    private final ImportacaoFolhaService extracaoFolhaService;
+    private final ImportacaoPorForaService extracaoPorForaService;
     private final FuncionarioImportacaoRepository repository;
 
     @Transactional(rollbackFor = IOException.class)
@@ -30,12 +29,17 @@ public class ConciliacaoPagamentoService {
             MultipartFile arquivoPorFora
     ) throws IOException {
 
+        String cargoPadrao = "Por Fora";
+        LocalDate competencia;
+
         // 1. Extrair folha de pagamento
         List<FuncionarioImportacao> funcionarios =
                 extracaoFolhaService.processar(arquivoFolha);
 
+        competencia = funcionarios.get(0).getCompetencia();
+
         // 2. Extrair pagamentos por fora
-        ExtracaoPorForaService.ResultadoExtracao resultado =
+        ImportacaoPorForaService.ResultadoExtracao resultado =
                 extracaoPorForaService.processar(arquivoPorFora);
 
         // 3. Indexar funcionários pelo nome normalizado
@@ -65,9 +69,11 @@ public class ConciliacaoPagamentoService {
             }
         }
 
+
+
         // 4. Vincular dados da Ricieri
 
-        for (ExtracaoPorForaService.Linha linha :
+        for (ImportacaoPorForaService.Linha linha :
                 resultado.linhasRicieri()) {
 
             String chave = normalizarNome(linha.nome());
@@ -77,6 +83,8 @@ public class ConciliacaoPagamentoService {
             if (funcionario == null) {
                 FuncionarioImportacao funcionarioImportacao = new FuncionarioImportacao();
                 funcionarioImportacao.setNome(linha.nome());
+                funcionarioImportacao.setCargo(cargoPadrao);
+                funcionarioImportacao.setCompetencia(competencia);
                 funcionarioImportacao.setValeTransportePorFora(converter(linha.valeTransporte()));
                 funcionarioImportacao.setValeRefeicaoPorFora(converter(linha.valeRefeicao()));
                 funcionarioImportacao.setGratificacaoPorFora(converter(linha.gratificacao()));
@@ -114,6 +122,8 @@ public class ConciliacaoPagamentoService {
             if (funcionario == null) {
                 FuncionarioImportacao funcionarioImportacao = new FuncionarioImportacao();
                 funcionarioImportacao.setNome(entrada.getKey());
+                funcionarioImportacao.setCargo(cargoPadrao);
+                funcionarioImportacao.setCompetencia(competencia);
                 funcionarioImportacao.setValorBestPontos(converter(entrada.getValue()));
                 funcionarios.add(funcionarioImportacao);
                 continue;

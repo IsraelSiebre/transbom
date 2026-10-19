@@ -1,4 +1,4 @@
-package com.insights.rh.extracao;
+package com.insights.rh.importacao.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -6,7 +6,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Getter
 @Setter
@@ -339,14 +341,42 @@ public class FuncionarioImportacao {
     @Column(name = "valor_best_pontos")
     private BigDecimal valorBestPontos;
 
-    @Column(name = "data_importacao")
-    LocalDateTime dataImportacao = LocalDateTime.now();
-
+    //funcionario
     @Column(name = "nome")
     private  String nome;
 
     @Column(name = "cpf")
     private String cpf;
+
+    @Column(name = "empresa")
+    private String Empresa;
+
+    @Column(name = "cargo")
+    private String cargo;
+
+    @Column(name = "data_admissao")
+    private LocalDate dataAdmissao;
+
+    @Column(name = "competencia")
+    private LocalDate competencia;
+
+    public void setCompetencia(String data) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        this.competencia = LocalDate.parse(data, formatter);
+    }
+
+    public void setCompetencia(LocalDate data) {
+        this.competencia = data;
+    }
+
+    public void setDataAdmissao(String data) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        this.dataAdmissao = LocalDate.parse(data, formatter);
+    }
+
+    public void setDataAdmissao(LocalDate data) {
+        this.dataAdmissao = data;
+    }
 
     public void setValorPorCodigo(String codigo, BigDecimal valor) {
 
@@ -486,106 +516,4 @@ public class FuncionarioImportacao {
         }
     }
 
-    @Override
-    public String toString() {
-        return "FuncionarioImportacao{" +
-                "id=" + id +
-                ", insalubridade=" + insalubridade +
-                ", periculosidade=" + periculosidade +
-                ", horasExtras50=" + horasExtras50 +
-                ", horasExtras100=" + horasExtras100 +
-                ", adicionalNoturnoValor=" + adicionalNoturnoValor +
-                ", adicionalNoturnoHoraReduzida=" + adicionalNoturnoHoraReduzida +
-                ", reflexoExtrasDsr=" + reflexoExtrasDsr +
-                ", horasExtrasNoturnas50=" + horasExtrasNoturnas50 +
-                ", adicionalMotoristaRodotrem=" + adicionalMotoristaRodotrem +
-                ", horasNormais=" + horasNormais +
-                ", horasExtrasNoturnas100=" + horasExtrasNoturnas100 +
-                ", bancoHoras50=" + bancoHoras50 +
-                ", reflexoAdicionalNoturnoDsr=" + reflexoAdicionalNoturnoDsr +
-                ", participacaoLucros=" + participacaoLucros +
-                ", dsrHoristaVariavel=" + dsrHoristaVariavel +
-                ", proLabore=" + proLabore +
-                ", diariasViagens=" + diariasViagens +
-                ", pernoite=" + pernoite +
-                ", planoOdontologico=" + planoOdontologico +
-                ", descontoFarmacia=" + descontoFarmacia +
-                ", convenioSeguros=" + convenioSeguros +
-                ", valesDiversos=" + valesDiversos +
-                ", convenioAnaCosta=" + convenioAnaCosta +
-                ", convenioNotredame=" + convenioNotredame +
-                ", convenioSaudeCoparticipacao=" + convenioSaudeCoparticipacao +
-                ", convenioSaudeDependente=" + convenioSaudeDependente +
-                ", convenioSaudeTitular=" + convenioSaudeTitular +
-                ", emprestimo=" + emprestimo +
-                ", multaTransito=" + multaTransito +
-                ", pensaoAlimenticiaSalarioMinimo=" + pensaoAlimenticiaSalarioMinimo +
-                ", pensaoMensalLiquido=" + pensaoMensalLiquido +
-                ", contribuicaoEspontanea=" + contribuicaoEspontanea +
-                ", contribuicaoConfederativa=" + contribuicaoConfederativa +
-                ", descontoMaterial=" + descontoMaterial +
-                ", descontoAdiantamentoSalarial=" + descontoAdiantamentoSalarial +
-                ", estouroMes=" + estouroMes +
-                ", estouroMesAnterior=" + estouroMesAnterior +
-                ", descontoEmprestimoCreditoTrabalhador=" + descontoEmprestimoCreditoTrabalhador +
-                ", feriasProporcionais=" + feriasProporcionais +
-                ", mediaValorFerias=" + mediaValorFerias +
-                ", mediaHorasFerias=" + mediaHorasFerias +
-                ", vantagensFerias=" + vantagensFerias +
-                ", mediaValorAbono=" + mediaValorAbono +
-                ", mediaHorasAbono=" + mediaHorasAbono +
-                ", vantagensAbono=" + vantagensAbono +
-                ", mediaHorasFeriasProporcionais=" + mediaHorasFeriasProporcionais +
-                ", mediaValorFeriasProporcionais=" + mediaValorFeriasProporcionais +
-                ", umTercoFerias=" + umTercoFerias +
-                ", umTercoAbonoFerias=" + umTercoAbonoFerias +
-                ", adiantamentoFerias=" + adiantamentoFerias +
-                ", diferencaUmTercoFerias=" + diferencaUmTercoFerias +
-                ", umTercoFeriasProporcionaisRescisao=" + umTercoFeriasProporcionaisRescisao +
-                ", diferencaMediaValorFerias=" + diferencaMediaValorFerias +
-                ", diferencaMediaValorAbonoFerias=" + diferencaMediaValorAbonoFerias +
-                ", diferencaUmTercoAbonoFerias=" + diferencaUmTercoAbonoFerias +
-                ", diasFerias=" + diasFerias +
-                ", diasAbonoPecuniarioFerias=" + diasAbonoPecuniarioFerias +
-                ", inssFerias=" + inssFerias +
-                ", inssDiferencaFerias=" + inssDiferencaFerias +
-                ", inssRescisao=" + inssRescisao +
-                ", irrfRescisao=" + irrfRescisao +
-                ", inssDiferencaFeriasDescontoMaior=" + inssDiferencaFeriasDescontoMaior +
-                ", inssEmpregador=" + inssEmpregador +
-                ", irrfFerias=" + irrfFerias +
-                ", inssDecimoTerceiroRescisao=" + inssDecimoTerceiroRescisao +
-                ", inss=" + inss +
-                ", impostoRenda=" + impostoRenda +
-                ", mediaAfastamentoDoenca=" + mediaAfastamentoDoenca +
-                ", periculosidadeAcidenteTrabalho=" + periculosidadeAcidenteTrabalho +
-                ", periculosidadeDoenca=" + periculosidadeDoenca +
-                ", diasAfastamentoInssDoenca=" + diasAfastamentoInssDoenca +
-                ", diasAfastamentoAcidenteTrabalho=" + diasAfastamentoAcidenteTrabalho +
-                ", diasFaltas=" + diasFaltas +
-                ", descontoDiasAfastados=" + descontoDiasAfastados +
-                ", descontoDiasAfastadosAcidenteTrabalho=" + descontoDiasAfastadosAcidenteTrabalho +
-                ", diasSuspensos=" + diasSuspensos +
-                ", diasAfastamentoDoencaAte15Dias=" + diasAfastamentoDoencaAte15Dias +
-                ", periculosidadeAfastamentoAte15Dias=" + periculosidadeAfastamentoAte15Dias +
-                ", liquidoRescisao=" + liquidoRescisao +
-                ", decimoTerceiroIntegralRescisao=" + decimoTerceiroIntegralRescisao +
-                ", mediaHorasDecimoTerceiroRescisao=" + mediaHorasDecimoTerceiroRescisao +
-                ", mediaValorDecimoTerceiroRescisao=" + mediaValorDecimoTerceiroRescisao +
-                ", saldoSalarioDias=" + saldoSalarioDias +
-                ", diasNormais=" + diasNormais +
-                ", baseFgts=" + baseFgts +
-                ", baseInss=" + baseInss +
-                ", baseIrrf=" + baseIrrf +
-                ", fgtsRecolher=" + fgtsRecolher +
-                ", seguroAcidenteTrabalho=" + seguroAcidenteTrabalho +
-                ", valorOutrasEntidades=" + valorOutrasEntidades +
-                ", totalVencimentos=" + totalVencimentos +
-                ", totalDescontos=" + totalDescontos +
-                ", totalLiquido=" + totalLiquido +
-                ", dataImportacao=" + dataImportacao +
-                ", nome='" + nome + '\'' +
-                ", cpf='" + cpf + '\'' +
-                '}';
-    }
 }

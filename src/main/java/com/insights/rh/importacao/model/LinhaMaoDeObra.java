@@ -1,4 +1,4 @@
-package com.insights.rh.extracao;
+package com.insights.rh.importacao.model;
 
 public record LinhaMaoDeObra(
         String nome,

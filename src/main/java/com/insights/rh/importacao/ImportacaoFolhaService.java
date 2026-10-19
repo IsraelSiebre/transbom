@@ -1,6 +1,7 @@
-package com.insights.rh.extracao;
+package com.insights.rh.importacao;
 
-import com.insights.rh.repository.FuncionarioImportacaoRepository;
+import com.insights.rh.importacao.model.FuncionarioImportacao;
+import jakarta.persistence.Column;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -28,9 +30,9 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class ExtracaoFolhaService {
+public class ImportacaoFolhaService {
 
-    private static final Logger log = LoggerFactory.getLogger(ExtracaoFolhaService.class);
+    private static final Logger log = LoggerFactory.getLogger(ImportacaoFolhaService.class);
     private static final BigDecimal ALIQUOTA_RAT = new BigDecimal("0.0388");
     private static final BigDecimal ALIQUOTA_TERCEIROS = new BigDecimal("0.058");
 
@@ -44,6 +46,7 @@ public class ExtracaoFolhaService {
 
         for (Map<String, Object> linha : linhas) {
             String nome = texto(linha.get("cp_nome_epr"));
+
             if (nome == null) {
                 continue;
             }
@@ -63,6 +66,10 @@ public class ExtracaoFolhaService {
             FuncionarioImportacao funcionario = new FuncionarioImportacao();
             Map<String, Object> primeiraLinha = grupo.get(0);
             funcionario.setNome(texto(primeiraLinha.get("cp_nome_epr")));
+            funcionario.setCompetencia(texto(primeiraLinha.get("cp_competencia")));
+            funcionario.setEmpresa(texto(primeiraLinha.get("nome_emp")));
+            funcionario.setCargo(texto(primeiraLinha.get("cp_nome_car")));
+            funcionario.setDataAdmissao(texto(primeiraLinha.get("cp_admissao")));
             funcionario.setCpf(texto(primeiraLinha.get("cp_cpf")));
 
             Set<String> eventosProcessados = new HashSet<>();

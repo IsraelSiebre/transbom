@@ -1,5 +1,5 @@
 
-package com.insights.rh.extracao;
+package com.insights.rh.importacao;
 
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.stereotype.Service;
@@ -10,7 +10,7 @@ import java.io.InputStream;
 import java.util.*;
 
 @Service
-public class ExtracaoPorForaService {
+public class ImportacaoPorForaService {
 
     public ResultadoExtracao processar(MultipartFile arquivo)
             throws IOException {
