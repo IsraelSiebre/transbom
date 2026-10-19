@@ -320,6 +320,25 @@ public class FuncionarioImportacao {
         @Column(name = "total_liquido")
         private BigDecimal totalLiquido;
 
+    // PAGAMENTOS POR FORA - RICIERI
+
+    @Column(name = "vale_transporte_por_fora")
+    private BigDecimal valeTransportePorFora;
+
+    @Column(name = "vale_refeicao_por_fora")
+    private BigDecimal valeRefeicaoPorFora;
+
+    @Column(name = "gratificacao_por_fora")
+    private BigDecimal gratificacaoPorFora;
+
+    @Column(name = "comissoes_por_fora")
+    private BigDecimal comissoesPorFora;
+
+    // BESTPONTOS
+
+    @Column(name = "valor_best_pontos")
+    private BigDecimal valorBestPontos;
+
     @Column(name = "data_importacao")
     LocalDateTime dataImportacao = LocalDateTime.now();
 

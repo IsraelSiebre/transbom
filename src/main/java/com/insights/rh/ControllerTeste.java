@@ -1,29 +1,24 @@
+
 package com.insights.rh;
 
-import com.insights.rh.extracao.ExtracaoService;
+import com.insights.rh.extracao.ConciliacaoPagamentoService;
 import com.insights.rh.extracao.FuncionarioImportacao;
-import com.insights.rh.extracao.LinhaMaoDeObra;
 
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
 public class ControllerTeste {
 
-    private final ExtracaoService extracaoService;
+    private final ConciliacaoPagamentoService conciliacaoService;
 
     @GetMapping("/")
     public String index() {
@@ -33,25 +28,21 @@ public class ControllerTeste {
     @PostMapping("/extracao/processar")
     @ResponseBody
     public ResponseEntity<List<FuncionarioImportacao>> processar(
-            @RequestParam("arquivo") MultipartFile arquivo
+            @RequestParam("folha") MultipartFile folha,
+            @RequestParam("porFora") MultipartFile porFora
     ) throws IOException {
 
-        Path temporario = Files.createTempFile(
-                "extrato-",
-                ".xlsx"
+        if (folha.isEmpty() || porFora.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<FuncionarioImportacao> funcionarios =
+                conciliacaoService.processar(folha, porFora);
+
+        System.out.println(
+                "Funcionários importados: " + funcionarios.size()
         );
 
-        try {
-            List<FuncionarioImportacao> resultado =
-                    extracaoService.processar(arquivo);
-
-            resultado.forEach(f -> {
-                System.out.println(f.toString());
-            });
-            return ResponseEntity.ok(resultado);
-
-        } finally {
-            Files.deleteIfExists(temporario);
-        }
+        return ResponseEntity.ok(funcionarios);
     }
 }

@@ -28,12 +28,11 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class ExtracaoService {
+public class ExtracaoFolhaService {
 
-    private static final Logger log = LoggerFactory.getLogger(ExtracaoService.class);
+    private static final Logger log = LoggerFactory.getLogger(ExtracaoFolhaService.class);
     private static final BigDecimal ALIQUOTA_RAT = new BigDecimal("0.0388");
     private static final BigDecimal ALIQUOTA_TERCEIROS = new BigDecimal("0.058");
-    private final FuncionarioImportacaoRepository repository;
 
     public List<FuncionarioImportacao> processar(MultipartFile arquivo) throws IOException {
         if (arquivo == null || arquivo.isEmpty()) {
@@ -103,8 +102,6 @@ public class ExtracaoService {
 
             funcionarios.add(funcionario);
         }
-
-        repository.saveAll(funcionarios);
 
         return funcionarios;
     }
