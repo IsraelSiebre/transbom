@@ -1,0 +1,812 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centros de Custo | RH Insights</title>
+
+    <style>
+        :root {
+            --bg: #f5f7fb;
+            --surface: #ffffff;
+            --ink: #17243a;
+            --muted: #758198;
+            --line: #e6ebf3;
+            --blue: #2563eb;
+            --blue-soft: #eff6ff;
+            --green: #15803d;
+            --radius: 15px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: Inter, system-ui, -apple-system,
+            "Segoe UI", sans-serif;
+        }
+
+        .container {
+            width: min(1250px, calc(100% - 40px));
+            margin: 36px auto 60px;
+        }
+
+        h1, h2, p { margin: 0; }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 26px;
+        }
+
+        .eyebrow {
+            color: var(--blue);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        h1 {
+            font-size: clamp(24px, 3vw, 32px);
+            letter-spacing: -.04em;
+        }
+
+        .subtitle {
+            margin-top: 7px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            box-shadow: 0 3px 15px rgba(20, 38, 71, .025);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: 0;
+            border-radius: 9px;
+            padding: 12px 18px;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: .2s;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-primary:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #475569;
+            border: 1px solid var(--line);
+        }
+
+        .btn-secondary:hover {
+            background: #f8fafc;
+        }
+
+        .summary {
+            padding: 23px;
+            margin-bottom: 20px;
+        }
+
+        .summary-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .summary-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 13px;
+            background: #fef3c7;
+            color: #b45309;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 25px;
+            flex-shrink: 0;
+        }
+
+        .summary h2 {
+            font-size: 17px;
+            margin-bottom: 5px;
+        }
+
+        .summary p {
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-top: 22px;
+        }
+
+        .metric {
+            background: #f8faff;
+            padding: 16px 18px;
+            border-radius: 11px;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 25px;
+            font-weight: 800;
+        }
+
+        .metric.success .metric-value {
+            color: var(--green);
+        }
+
+        .metric.warning .metric-value {
+            color: #d97706;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: end;
+            padding: 22px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            min-width: 0;
+        }
+
+        .field label {
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 750;
+        }
+
+        .field input {
+            min-width: 0;
+            width: 100%;
+            padding: 12px 13px;
+            border: 1px solid #dce3ee;
+            border-radius: 9px;
+            outline: none;
+            background: white;
+            color: var(--ink);
+            font: inherit;
+            font-size: 13px;
+        }
+
+        .field input:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(37,99,235,.08);
+        }
+
+        .search {
+            width: 350px;
+            max-width: 100%;
+        }
+
+        .bulk {
+            display: flex;
+            align-items: end;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .bulk .field {
+            width: 270px;
+        }
+
+        .table-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 23px 22px 16px;
+            gap: 12px;
+        }
+
+        .table-header h2 {
+            font-size: 16px;
+        }
+
+        .table-header p {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 6px;
+        }
+
+        .badge {
+            display: inline-flex;
+            padding: 6px 11px;
+            background: var(--blue-soft);
+            color: var(--blue);
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 750;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 15px 22px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        th {
+            background: #f8faff;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            font-size: 11px;
+            font-weight: 750;
+        }
+
+        tbody tr:hover {
+            background: #fafcff;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr[hidden] {
+            display: none;
+        }
+
+        .nome {
+            font-size: 13px;
+            font-weight: 750;
+        }
+
+        .id-func {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 5px;
+        }
+
+        .cargo {
+            color: #64748b;
+        }
+
+        .centro-input {
+            width: 100%;
+            min-width: 220px;
+            padding: 11px 12px;
+            border: 1px solid #dce3ee;
+            border-radius: 9px;
+            font: inherit;
+            font-size: 12px;
+            outline: none;
+            transition: .2s;
+        }
+
+        .centro-input:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(37,99,235,.08);
+        }
+
+        .centro-input.preenchido {
+            background: #f0fdf4;
+            border-color: #86efac;
+        }
+
+        .status {
+            display: inline-flex;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 750;
+            background: #fff7ed;
+            color: #c2410c;
+            white-space: nowrap;
+        }
+
+        .status.pronto {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .footer {
+            padding: 19px 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            border-top: 1px solid var(--line);
+            background: #fafcff;
+            border-radius: 0 0 var(--radius) var(--radius);
+        }
+
+        .footer p {
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .footer strong {
+            color: var(--ink);
+        }
+
+        .feedback {
+            padding: 15px 18px;
+            border-radius: 10px;
+            margin-bottom: 18px;
+            font-size: 13px;
+        }
+
+        .feedback.success {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+
+        .feedback.error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+        }
+
+        .empty {
+            padding: 55px 20px;
+            text-align: center;
+            color: var(--muted);
+        }
+
+        .empty h2 {
+            color: var(--ink);
+            margin-bottom: 10px;
+        }
+
+        .empty p {
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 900px) {
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search, .bulk .field {
+                width: 100%;
+            }
+
+            table {
+                min-width: 800px;
+            }
+        }
+
+        @media (max-width: 650px) {
+            .container {
+                width: calc(100% - 24px);
+                margin: 20px auto 40px;
+            }
+
+            .topbar {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .metrics {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .metrics .metric:first-child {
+                grid-column: span 2;
+            }
+
+            .bulk {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .bulk .btn {
+                width: 100%;
+            }
+
+            .footer {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .footer .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<main class="container">
+
+    <header class="topbar">
+        <div>
+            <p class="eyebrow">RH • Gestão cadastral</p>
+            <h1>Definir centros de custo</h1>
+            <p class="subtitle">
+                Regularize a alocação dos funcionários
+                para garantir a precisão dos indicadores financeiros.
+            </p>
+        </div>
+
+        <button class="btn btn-secondary"
+                type="button"
+                onclick="history.back()">
+            ← Voltar
+        </button>
+    </header>
+
+    <!-- Mensagens do controller -->
+    <div class="feedback success"
+         th:if="${sucesso}"
+         th:text="${sucesso}">
+    </div>
+
+    <div class="feedback error"
+         th:if="${erro}"
+         th:text="${erro}">
+    </div>
+
+    <!-- Indicadores -->
+    <section class="card summary">
+        <div class="summary-header">
+            <div class="summary-icon">⚠</div>
+            <div>
+                <h2>Pendências de centro de custo</h2>
+                <p>
+                    Os funcionários abaixo não possuem centro de
+                    custo e não estão sendo considerados nos
+                    indicadores financeiros.
+                </p>
+            </div>
+        </div>
+
+        <div class="metrics">
+            <div class="metric warning">
+                <p class="metric-label">Total de pendências</p>
+                <p class="metric-value"
+                   th:text="${#lists.size(funcionariosSemCC)}">
+                    0
+                </p>
+            </div>
+
+            <div class="metric success">
+                <p class="metric-label">Prontos para salvar</p>
+                <p class="metric-value" id="qtdPreenchidos">
+                    0
+                </p>
+            </div>
+
+            <div class="metric">
+                <p class="metric-label">Ainda não preenchidos</p>
+                <p class="metric-value"
+                   id="qtdRestantes"
+                   th:text="${#lists.size(funcionariosSemCC)}">
+                    0
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mensagem caso não existam pendências -->
+    <section class="card empty"
+             th:if="${#lists.isEmpty(funcionariosSemCC)}">
+        <h2>Todos os centros de custo estão definidos!</h2>
+        <p>
+            Nenhum funcionário possui pendências
+            de alocação no momento.
+        </p>
+    </section>
+
+    <!-- Formulário -->
+    <form th:action="@{/funcionarios/sem-centro-custo}"
+          method="post"
+          id="formCentros"
+          class="card"
+          th:unless="${#lists.isEmpty(funcionariosSemCC)}">
+
+        <!-- Proteção CSRF, caso utilize Spring Security -->
+        <input type="hidden"
+               th:if="${_csrf != null}"
+               th:name="${_csrf.parameterName}"
+               th:value="${_csrf.token}">
+
+        <!-- Sugestões de centros já utilizados -->
+        <datalist id="listaCentrosCusto">
+            <option th:each="cc : ${centrosDeCustoExistentes}"
+                    th:value="${cc}">
+            </option>
+        </datalist>
+
+        <div class="toolbar">
+            <div class="field search">
+                <label for="busca">Pesquisar funcionário</label>
+                <input type="search"
+                       id="busca"
+                       placeholder="Buscar por nome ou cargo..."
+                       autocomplete="off">
+            </div>
+
+            <div class="bulk">
+                <div class="field">
+                    <label for="centroGlobal">
+                        Atribuição em lote
+                    </label>
+                    <input type="text"
+                           id="centroGlobal"
+                           list="listaCentrosCusto"
+                           maxlength="100"
+                           placeholder="Centro de custo..."
+                           autocomplete="off">
+                </div>
+
+                <button type="button"
+                        id="btnAplicarTodos"
+                        class="btn btn-secondary">
+                    Preencher vazios
+                </button>
+            </div>
+        </div>
+
+        <div class="table-header">
+            <div>
+                <h2>Funcionários pendentes</h2>
+                <p>
+                    Informe o centro de custo correspondente
+                    a cada funcionário.
+                </p>
+            </div>
+
+            <span class="badge"
+                  th:text="|${#lists.size(funcionariosSemCC)} funcionários|">
+                0 funcionários
+            </span>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>Funcionário</th>
+                    <th>Cargo</th>
+                    <th>Centro de custo</th>
+                    <th>Situação</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="f : ${funcionariosSemCC}"
+                    data-linha
+                    th:attr="data-busca=|${f.nome} ${f.cargo}|">
+
+                    <td>
+                        <div class="nome"
+                             th:text="${f.nome}">
+                            Nome do funcionário
+                        </div>
+
+                        <div class="id-func"
+                             th:text="|ID #${f.id}|">
+                            ID
+                        </div>
+                    </td>
+
+                    <td>
+                        <span class="cargo"
+                              th:text="${f.cargo ?: 'Não informado'}">
+                            Cargo
+                        </span>
+                    </td>
+
+                    <td>
+                        <input type="hidden"
+                               name="funcionarioIds"
+                               th:value="${f.id}">
+
+                        <label th:for="|cc-${f.id}|"
+                               style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)"
+                               th:text="|Centro de custo de ${f.nome}|">
+                        </label>
+
+                        <input type="text"
+                               name="centrosDeCusto"
+                               class="centro-input"
+                               th:id="|cc-${f.id}|"
+                               list="listaCentrosCusto"
+                               maxlength="100"
+                               placeholder="Informe o centro de custo"
+                               autocomplete="off">
+                    </td>
+
+                    <td>
+                        <span class="status" data-status>
+                            Pendente
+                        </span>
+                    </td>
+                </tr>
+
+                <tr id="semResultados" hidden>
+                    <td colspan="4" class="empty">
+                        Nenhum funcionário encontrado na pesquisa.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>
+                <strong id="resumoSalvar">0 funcionários</strong>
+                prontos para atualização.
+                <br>
+                Os campos não preenchidos serão ignorados.
+            </p>
+
+            <button type="submit"
+                    id="btnSalvar"
+                    class="btn btn-primary">
+                Salvar alterações →
+            </button>
+        </div>
+    </form>
+
+</main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const linhas = [
+            ...document.querySelectorAll('[data-linha]')
+        ];
+
+        const inputs = [
+            ...document.querySelectorAll('.centro-input')
+        ];
+
+        const busca = document.getElementById('busca');
+        const btnAplicar = document.getElementById('btnAplicarTodos');
+        const btnSalvar = document.getElementById('btnSalvar');
+        const centroGlobal = document.getElementById('centroGlobal');
+
+        if (!linhas.length) return;
+
+        const normalizar = valor => String(valor || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .trim();
+
+        function atualizarIndicadores() {
+            let preenchidos = 0;
+
+            inputs.forEach(input => {
+                const preenchido = input.value.trim().length > 0;
+                const linha = input.closest('tr');
+                const status = linha.querySelector('[data-status]');
+
+                input.classList.toggle('preenchido', preenchido);
+
+                status.classList.toggle('pronto', preenchido);
+                status.textContent = preenchido
+                    ? 'Pronto para salvar'
+                    : 'Pendente';
+
+                if (preenchido) preenchidos++;
+            });
+
+            const restantes = inputs.length - preenchidos;
+
+            document.getElementById('qtdPreenchidos')
+                .textContent = preenchidos;
+
+            document.getElementById('qtdRestantes')
+                .textContent = restantes;
+
+            document.getElementById('resumoSalvar')
+                .textContent = `${preenchidos} funcionário(s)`;
+
+            btnSalvar.disabled = preenchidos === 0;
+        }
+
+        inputs.forEach(input => {
+            input.addEventListener('input', atualizarIndicadores);
+        });
+
+        // Pesquisa por funcionário ou cargo
+        busca.addEventListener('input', () => {
+            const termo = normalizar(busca.value);
+            let visiveis = 0;
+
+            linhas.forEach(linha => {
+                const corresponde =
+                    normalizar(linha.dataset.busca).includes(termo);
+
+                linha.hidden = !corresponde;
+
+                if (corresponde) visiveis++;
+            });
+
+            document.getElementById('semResultados')
+                .hidden = visiveis !== 0;
+        });
+
+        // Preenche somente campos que ainda estão vazios
+        btnAplicar.addEventListener('click', () => {
+            const centro = centroGlobal.value.trim();
+
+            if (!centro) {
+                centroGlobal.focus();
+                return;
+            }
+
+            inputs.forEach(input => {
+                if (!input.value.trim()) {
+                    input.value = centro;
+                }
+            });
+
+            atualizarIndicadores();
+        });
+
+        // Evita envios duplicados
+        document.getElementById('formCentros')
+            .addEventListener('submit', () => {
+                btnSalvar.disabled = true;
+                btnSalvar.textContent = 'Salvando...';
+            });
+
+        atualizarIndicadores();
+    });
+</script>
+</body>
+</html>
