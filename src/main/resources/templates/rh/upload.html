@@ -148,8 +148,8 @@
 
     <div class="card">
 
-        <form
-                action="/extracao/processar"
+        <form id="uploadForm"
+                th:action="@{/mao-de-obra/extracao/processar}"
                 method="post"
                 enctype="multipart/form-data"
         >
@@ -171,9 +171,10 @@
                     required
             >
 
-            <button type="submit">
+            <button type="submit" id="btnEnviar">
                 Processar arquivos
             </button>
+            <p id="status" role="status" aria-live="polite"></p>
         </form>
 
     </div>
@@ -198,9 +199,9 @@
                 <thead>
                 <tr>
                     <th>Nome</th>
-                    <th>Código</th>
-                    <th>Descrição</th>
-                    <th>Valor</th>
+                    <th>Competência</th>
+                    <th>Salário</th>
+                    <th>Custo de mão de obra total</th>
                 </tr>
                 </thead>
                 <tbody id="tabelaResultado"></tbody>
@@ -218,8 +219,6 @@
 
 <script th:inline="javascript">
     const form = document.getElementById("uploadForm");
-    const arquivo = document.getElementById("arquivo");
-    const nomeArquivo = document.getElementById("nomeArquivo");
     const status = document.getElementById("status");
     const btnEnviar = document.getElementById("btnEnviar");
     const resultado = document.getElementById("resultado");
@@ -227,15 +226,8 @@
 
     let dadosProcessados = [];
 
-    arquivo.addEventListener("change", () => {
-        nomeArquivo.textContent = arquivo.files[0]?.name
-            || "Nenhum arquivo selecionado";
-    });
-
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
-
-        if (!arquivo.files.length) return;
 
         btnEnviar.disabled = true;
         btnEnviar.textContent = "Processando...";
@@ -272,10 +264,10 @@
                 const tr = document.createElement("tr");
 
                 [
-                    linha.nome,
-                    linha.cod,
-                    linha.descricao,
-                    linha.valor
+                    linha.funcionario?.nome,
+                    linha.competencia,
+                    linha.salario,
+                    linha.custoMaoObraTotal
                 ].forEach(valor => {
                     const td = document.createElement("td");
                     td.textContent = valor ?? "";
@@ -293,7 +285,7 @@
 
         } finally {
             btnEnviar.disabled = false;
-            btnEnviar.textContent = "Processar arquivo";
+            btnEnviar.textContent = "Processar arquivos";
         }
     });
 

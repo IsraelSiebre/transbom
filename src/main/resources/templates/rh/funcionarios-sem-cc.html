@@ -202,7 +202,7 @@
             font-weight: 750;
         }
 
-        .field input {
+        .field input, .field select {
             min-width: 0;
             width: 100%;
             padding: 12px 13px;
@@ -549,7 +549,7 @@
     </section>
 
     <!-- Formulário -->
-    <form th:action="@{/funcionarios/sem-centro-custo}"
+    <form th:action="@{/mao-de-obra/funcionarios/sem-centro-custo}"
           method="post"
           id="formCentros"
           class="card"
@@ -582,12 +582,10 @@
                     <label for="centroGlobal">
                         Atribuição em lote
                     </label>
-                    <input type="text"
-                           id="centroGlobal"
-                           list="listaCentrosCusto"
-                           maxlength="100"
-                           placeholder="Centro de custo..."
-                           autocomplete="off">
+                    <select id="centroGlobal">
+                        <option value="">Selecione um centro de custo</option>
+                        <option th:each="cc : ${centrosDeCustoExistentes}" th:value="${cc}" th:text="${cc}"></option>
+                    </select>
                 </div>
 
                 <button type="button"
@@ -658,14 +656,10 @@
                                th:text="|Centro de custo de ${f.nome}|">
                         </label>
 
-                        <input type="text"
-                               name="centrosDeCusto"
-                               class="centro-input"
-                               th:id="|cc-${f.id}|"
-                               list="listaCentrosCusto"
-                               maxlength="100"
-                               placeholder="Informe o centro de custo"
-                               autocomplete="off">
+                        <select name="centrosDeCusto" class="centro-input" th:id="|cc-${f.id}|">
+                            <option value="">Selecione um centro de custo</option>
+                            <option th:each="cc : ${centrosDeCustoExistentes}" th:value="${cc}" th:text="${cc}"></option>
+                        </select>
                     </td>
 
                     <td>

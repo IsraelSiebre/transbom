@@ -1,4 +1,4 @@
-package com.insights.rh;
+package com.insights;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -9,5 +9,5 @@ public class RhApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(RhApplication.class, args);
 	}
-
 }
+
