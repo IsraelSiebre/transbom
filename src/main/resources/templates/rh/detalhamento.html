@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Detalhamento de mão de obra</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; background: #f4f7fb; color: #1e293b; font: 14px/1.5 system-ui, sans-serif; }
+main { max-width: 1600px; margin: auto; padding: 32px 24px; }
+a { color: #1d4ed8; }
+h1 { margin: 12px 0 4px; font-size: 28px; }
+p { color: #64748b; }
+form { display: flex; align-items: end; gap: 10px; margin: 24px 0; flex-wrap: wrap; }
+label { display: block; font-weight: 600; margin-bottom: 4px; }
+input, button { font: inherit; padding: 9px 12px; border-radius: 6px; border: 1px solid #cbd5e1; }
+button { color: white; background: #2563eb; border-color: #2563eb; cursor: pointer; }
+.tabela { overflow: auto; max-height: 70vh; background: white; border: 1px solid #e2e8f0; border-radius: 8px; }
+table { border-collapse: separate; border-spacing: 0; min-width: 100%; }
+th, td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; white-space: nowrap; text-align: left; }
+th { position: sticky; top: 0; background: #eaf0f9; z-index: 1; }
+.numero { text-align: right; font-variant-numeric: tabular-nums; }
+.vazio { text-align: center; color: #64748b; }
+</style>
+</head>
+<body>
+<main>
+<a th:href="@{/mao-de-obra(competencia=${competencia})}">← Voltar ao dashboard</a>
+<h1>Detalhamento por funcionário</h1>
+<p>Todos os valores calculados para a competência, incluindo funcionários sem centro de custo.</p>
+<form id="formCompetencia" method="get" th:action="@{/mao-de-obra/detalhamento}">
+    <div><label for="mesCompetencia">Competência</label>
+    <input type="month" id="mesCompetencia" required th:value="${#temporals.format(competencia, 'yyyy-MM')}"><input type="hidden" id="competencia" name="competencia" th:value="${competencia}"></div>
+    <button type="submit">Consultar</button>
+</form>
+<p th:text="|${#lists.size(calculos)} funcionário(s) na competência ${#temporals.format(competencia, 'MM/yyyy')}|">0 funcionários</p>
+<div class="tabela" role="region" aria-label="Detalhamento dos cálculos por funcionário" tabindex="0">
+<table>
+<thead><tr>
+                    <th scope="col">Nome</th>
+                    <th scope="col">Cargo</th>
+                    <th scope="col">Centro De Custo</th>
+                    <th scope="col">Data Admissão</th>
+                    <th scope="col">Salário</th>
+                    <th scope="col">Pro Labore</th>
+                    <th scope="col">Adiantamento De Salário</th>
+                    <th scope="col">Salário Familia</th>
+                    <th scope="col">Horas Extras50Banco</th>
+                    <th scope="col">Licença Remunerada</th>
+                    <th scope="col">Plr</th>
+                    <th scope="col">Horas Extras50</th>
+                    <th scope="col">Horas Extras Noturnas100</th>
+                    <th scope="col">Horas Extras100</th>
+                    <th scope="col">Hora Extra Noturna50</th>
+                    <th scope="col">Adicional Jornada Noturno20</th>
+                    <th scope="col">Adicional Noturno20</th>
+                    <th scope="col">Diárias De Viagens</th>
+                    <th scope="col">Pernoite</th>
+                    <th scope="col">Insalubridade Salário</th>
+                    <th scope="col">Dsr Geral</th>
+                    <th scope="col">Adicional Rodotren</th>
+                    <th scope="col">Comissões Com Provisão</th>
+                    <th scope="col">Comissões Sem Provisão</th>
+                    <th scope="col">Cesta Básica</th>
+                    <th scope="col">Provisão De Férias</th>
+                    <th scope="col">Dif Médias Férias</th>
+                    <th scope="col">Provisão13Salário</th>
+                    <th scope="col">Vale Transporte</th>
+                    <th scope="col">Vale Refeição</th>
+                    <th scope="col">Outros Encargos Sociais Trab</th>
+                    <th scope="col">R Aviso Prévio Indenizado</th>
+                    <th scope="col">Reflexo Extras Dsr</th>
+                    <th scope="col">Dsr Variável SAdic Jornada Noturno20</th>
+                    <th scope="col">Dsr SAdicional Noturno20</th>
+                    <th scope="col">Dsr SHora Extra Noturna50</th>
+                    <th scope="col">Dsr SHoras Extras100</th>
+                    <th scope="col">Abono Pecuniário</th>
+                    <th scope="col">Um Terço SAbono Pecuniário</th>
+                    <th scope="col">Dias Abono Pecuniário Férias</th>
+                    <th scope="col">R Saldo De Salário</th>
+                    <th scope="col">R Adicional De Férias</th>
+                    <th scope="col">R Férias SAviso Prévio</th>
+                    <th scope="col">Valor Líquido Da Rescisão</th>
+                    <th scope="col">Férias Proporcionais</th>
+                    <th scope="col">R13Salário Na Rct</th>
+                    <th scope="col">Treze Salário Integral Rescisão</th>
+                    <th scope="col">Fgts</th>
+                    <th scope="col">Férias Normais Mes</th>
+                    <th scope="col">Um Terço Adicional De Férias</th>
+                    <th scope="col">Adicional De Férias</th>
+                    <th scope="col">Santa Casa Saúde Adic</th>
+                    <th scope="col">Convenio Odontológico Adic</th>
+                    <th scope="col">Santa Casa Saúde Desc</th>
+                    <th scope="col">Convenio Odontológico Desc</th>
+                    <th scope="col">Convenio Ana Costa Saúde</th>
+                    <th scope="col">Convenio Saúde</th>
+                    <th scope="col">Vale Diversos</th>
+                    <th scope="col">Pensão Alimentícia25Sal Liq</th>
+                    <th scope="col">Desconto Empréstimo</th>
+                    <th scope="col">Faltas Injust Em Horas</th>
+                    <th scope="col">Convenio Saúde Coopart</th>
+                    <th scope="col">Convenio De Farmácia</th>
+                    <th scope="col">Convenio Seguros</th>
+                    <th scope="col">Multas De Trânsito</th>
+                    <th scope="col">Inss</th>
+                    <th scope="col">Inss De Férias</th>
+                    <th scope="col">Dias Afast Inss PDoença</th>
+                    <th scope="col">Inss Rescisão</th>
+                    <th scope="col">Irrf</th>
+                    <th scope="col">Irrf De Férias</th>
+                    <th scope="col">Descontos Totais</th>
+                    <th scope="col">Custo Mo Total</th>
+                    <th scope="col">Pensão Alimentícia25Sal</th>
+                    <th scope="col">Férias Normais Mes Ref</th>
+                    <th scope="col">Desc Adto Férias Mes</th>
+                    <th scope="col">Adiantamento De Diárias De Viagem</th>
+                    <th scope="col">Inss De Férias Ref</th>
+                    <th scope="col">Um Terço Adicional De Férias Ref</th>
+                    <th scope="col">Adicional Periculosidade</th>
+                    <th scope="col">Horas Normais Salário</th>
+                    <th scope="col">Hora Extra Noturna100</th>
+                    <th scope="col">Penhora</th>
+                    <th scope="col">Faltas Injust Dsr Em Horas</th>
+                    <th scope="col">Afastamento Doenças Dias Sempre</th>
+                    <th scope="col">Reembolso</th>
+                    <th scope="col">Seg Acidente Trabalho</th>
+                    <th scope="col">Valor outras entidades</th>
+</tr></thead>
+<tbody>
+<tr th:each="f : ${calculos}">
+                    <td th:text="${f.nome == null ? '—' : f.nome}">—</td>
+                    <td th:text="${f.cargo == null ? '—' : f.cargo}">—</td>
+                    <td th:text="${f.centroDeCusto == null ? 'Não informado' : f.centroDeCusto.descricao}">—</td>
+                    <td th:text="${f.dataAdmissao == null ? '—' : #temporals.format(f.dataAdmissao, 'dd/MM/yyyy')}">—</td>
+                    <td class="numero" th:text="${f.salario == null ? '—' : #numbers.formatDecimal(f.salario, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.proLabore == null ? '—' : #numbers.formatDecimal(f.proLabore, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.adiantamentoDeSalario == null ? '—' : #numbers.formatDecimal(f.adiantamentoDeSalario, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.salarioFamilia == null ? '—' : #numbers.formatDecimal(f.salarioFamilia, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.horasExtras50Banco == null ? '—' : #numbers.formatDecimal(f.horasExtras50Banco, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.licencaRemunerada == null ? '—' : #numbers.formatDecimal(f.licencaRemunerada, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.plr == null ? '—' : #numbers.formatDecimal(f.plr, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.horasExtras50 == null ? '—' : #numbers.formatDecimal(f.horasExtras50, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.horasExtrasNoturnas100 == null ? '—' : #numbers.formatDecimal(f.horasExtrasNoturnas100, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.horasExtras100 == null ? '—' : #numbers.formatDecimal(f.horasExtras100, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.horaExtraNoturna50 == null ? '—' : #numbers.formatDecimal(f.horaExtraNoturna50, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.adicionalJornadaNoturno20 == null ? '—' : #numbers.formatDecimal(f.adicionalJornadaNoturno20, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.adicionalNoturno20 == null ? '—' : #numbers.formatDecimal(f.adicionalNoturno20, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.diariasDeViagens == null ? '—' : #numbers.formatDecimal(f.diariasDeViagens, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.pernoite == null ? '—' : #numbers.formatDecimal(f.pernoite, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.insalubridadeSalario == null ? '—' : #numbers.formatDecimal(f.insalubridadeSalario, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.dsrGeral == null ? '—' : #numbers.formatDecimal(f.dsrGeral, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.adicionalRodotren == null ? '—' : #numbers.formatDecimal(f.adicionalRodotren, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.comissoesComProvisao == null ? '—' : #numbers.formatDecimal(f.comissoesComProvisao, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.comissoesSemProvisao == null ? '—' : #numbers.formatDecimal(f.comissoesSemProvisao, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.cestaBasica == null ? '—' : #numbers.formatDecimal(f.cestaBasica, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.provisaoDeFerias == null ? '—' : #numbers.formatDecimal(f.provisaoDeFerias, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.difMediasFerias == null ? '—' : #numbers.formatDecimal(f.difMediasFerias, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.provisao13Salario == null ? '—' : #numbers.formatDecimal(f.provisao13Salario, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.valeTransporte == null ? '—' : #numbers.formatDecimal(f.valeTransporte, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.valeRefeicao == null ? '—' : #numbers.formatDecimal(f.valeRefeicao, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.outrosEncargosSociaisTrab == null ? '—' : #numbers.formatDecimal(f.outrosEncargosSociaisTrab, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.rAvisoPrevioIndenizado == null ? '—' : #numbers.formatDecimal(f.rAvisoPrevioIndenizado, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.reflexoExtrasDsr == null ? '—' : #numbers.formatDecimal(f.reflexoExtrasDsr, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.dsrVariavelSAdicJornadaNoturno20 == null ? '—' : #numbers.formatDecimal(f.dsrVariavelSAdicJornadaNoturno20, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.dsrSAdicionalNoturno20 == null ? '—' : #numbers.formatDecimal(f.dsrSAdicionalNoturno20, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.dsrSHoraExtraNoturna50 == null ? '—' : #numbers.formatDecimal(f.dsrSHoraExtraNoturna50, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.dsrSHorasExtras100 == null ? '—' : #numbers.formatDecimal(f.dsrSHorasExtras100, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.abonoPecuniario == null ? '—' : #numbers.formatDecimal(f.abonoPecuniario, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.umTercoSAbonoPecuniario == null ? '—' : #numbers.formatDecimal(f.umTercoSAbonoPecuniario, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.diasAbonoPecuniarioFerias == null ? '—' : #numbers.formatDecimal(f.diasAbonoPecuniarioFerias, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.rSaldoDeSalario == null ? '—' : #numbers.formatDecimal(f.rSaldoDeSalario, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.rAdicionalDeFerias == null ? '—' : #numbers.formatDecimal(f.rAdicionalDeFerias, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.rFeriasSAvisoPrevio == null ? '—' : #numbers.formatDecimal(f.rFeriasSAvisoPrevio, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.valorLiquidoDaRescisao == null ? '—' : #numbers.formatDecimal(f.valorLiquidoDaRescisao, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.feriasProporcionais == null ? '—' : #numbers.formatDecimal(f.feriasProporcionais, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.r13SalarioNaRct == null ? '—' : #numbers.formatDecimal(f.r13SalarioNaRct, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.trezeSalarioIntegralRescisao == null ? '—' : #numbers.formatDecimal(f.trezeSalarioIntegralRescisao, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.fgts == null ? '—' : #numbers.formatDecimal(f.fgts, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.feriasNormaisMes == null ? '—' : #numbers.formatDecimal(f.feriasNormaisMes, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.umTercoAdicionalDeFerias == null ? '—' : #numbers.formatDecimal(f.umTercoAdicionalDeFerias, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.adicionalDeFerias == null ? '—' : #numbers.formatDecimal(f.adicionalDeFerias, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.santaCasaSaudeAdic == null ? '—' : #numbers.formatDecimal(f.santaCasaSaudeAdic, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.convenioOdontologicoAdic == null ? '—' : #numbers.formatDecimal(f.convenioOdontologicoAdic, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.santaCasaSaudeDesc == null ? '—' : #numbers.formatDecimal(f.santaCasaSaudeDesc, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.convenioOdontologicoDesc == null ? '—' : #numbers.formatDecimal(f.convenioOdontologicoDesc, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.convenioAnaCostaSaude == null ? '—' : #numbers.formatDecimal(f.convenioAnaCostaSaude, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.convenioSaude == null ? '—' : #numbers.formatDecimal(f.convenioSaude, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.valeDiversos == null ? '—' : #numbers.formatDecimal(f.valeDiversos, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.pensaoAlimenticia25SalLiq == null ? '—' : #numbers.formatDecimal(f.pensaoAlimenticia25SalLiq, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.descontoEmprestimo == null ? '—' : #numbers.formatDecimal(f.descontoEmprestimo, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.faltasInjustEmHoras == null ? '—' : #numbers.formatDecimal(f.faltasInjustEmHoras, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.convenioSaudeCoopart == null ? '—' : #numbers.formatDecimal(f.convenioSaudeCoopart, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.convenioDeFarmacia == null ? '—' : #numbers.formatDecimal(f.convenioDeFarmacia, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.convenioSeguros == null ? '—' : #numbers.formatDecimal(f.convenioSeguros, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.multasDeTransito == null ? '—' : #numbers.formatDecimal(f.multasDeTransito, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.inss == null ? '—' : #numbers.formatDecimal(f.inss, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.inssDeFerias == null ? '—' : #numbers.formatDecimal(f.inssDeFerias, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.diasAfastInssPDoenca == null ? '—' : #numbers.formatDecimal(f.diasAfastInssPDoenca, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.inssRescisao == null ? '—' : #numbers.formatDecimal(f.inssRescisao, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.irrf == null ? '—' : #numbers.formatDecimal(f.irrf, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.irrfDeFerias == null ? '—' : #numbers.formatDecimal(f.irrfDeFerias, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.descontosTotais == null ? '—' : #numbers.formatDecimal(f.descontosTotais, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.custoMoTotal == null ? '—' : #numbers.formatDecimal(f.custoMoTotal, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.pensaoAlimenticia25Sal == null ? '—' : #numbers.formatDecimal(f.pensaoAlimenticia25Sal, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.feriasNormaisMesRef == null ? '—' : #numbers.formatDecimal(f.feriasNormaisMesRef, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.descAdtoFeriasMes == null ? '—' : #numbers.formatDecimal(f.descAdtoFeriasMes, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.adiantamentoDeDiariasDeViagem == null ? '—' : #numbers.formatDecimal(f.adiantamentoDeDiariasDeViagem, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.inssDeFeriasRef == null ? '—' : #numbers.formatDecimal(f.inssDeFeriasRef, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.umTercoAdicionalDeFeriasRef == null ? '—' : #numbers.formatDecimal(f.umTercoAdicionalDeFeriasRef, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.adicionalPericulosidade == null ? '—' : #numbers.formatDecimal(f.adicionalPericulosidade, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.horasNormaisSalario == null ? '—' : #numbers.formatDecimal(f.horasNormaisSalario, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.horaExtraNoturna100 == null ? '—' : #numbers.formatDecimal(f.horaExtraNoturna100, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.penhora == null ? '—' : #numbers.formatDecimal(f.penhora, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.faltasInjustDsrEmHoras == null ? '—' : #numbers.formatDecimal(f.faltasInjustDsrEmHoras, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.afastamentoDoencasDiasSempre == null ? '—' : #numbers.formatDecimal(f.afastamentoDoencasDiasSempre, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.reembolso == null ? '—' : #numbers.formatDecimal(f.reembolso, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.segAcidenteTrabalho == null ? '—' : #numbers.formatDecimal(f.segAcidenteTrabalho, 1, 'POINT', 2, 'COMMA')}">—</td>
+                    <td class="numero" th:text="${f.valorOutrasEntidades == null ? '—' : #numbers.formatDecimal(f.valorOutrasEntidades, 1, 'POINT', 2, 'COMMA')}">—</td>
+</tr>
+<tr th:if="${#lists.isEmpty(calculos)}"><td class="vazio" colspan="88">Nenhum funcionário encontrado para esta competência.</td></tr>
+</tbody>
+</table>
+</div>
+</main>
+<script>document.getElementById('formCompetencia').addEventListener('submit', function () { document.getElementById('competencia').value = document.getElementById('mesCompetencia').value + '-01'; });</script>
+</body>
+</html>

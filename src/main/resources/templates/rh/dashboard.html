@@ -266,7 +266,7 @@
                 dos relatórios.
             </p>
 
-            <a th:href="@{/funcionarios/sem-centro-custo}"
+            <a th:href="@{/mao-de-obra/funcionarios/sem-centro-custo}"
                class="alerta-botao">
                 Definir centros de custo
                 <span aria-hidden="true">→</span>
@@ -281,7 +281,7 @@
             <p class="subtitle">Indicadores e custos por centro de custo na competência selecionada.</p>
         </div>
         <!-- LocalDate espera yyyy-MM-dd; o formulário converte o mês para o primeiro dia. -->
-        <form class="filter" id="formCompetencia" method="get" th:action="@{/dashboard}">
+        <form class="filter" id="formCompetencia" method="get" th:action="@{/mao-de-obra}">
             <div>
                 <label for="mesCompetencia">Competência</label>
                 <input type="month" id="mesCompetencia" required
@@ -385,6 +385,7 @@
                 <h2>Detalhamento por funcionário</h2>
                 <p class="panel-caption">Principais valores do cálculo individual.</p>
             </div>
+            <a class="pill" th:href="@{/mao-de-obra/detalhamento(competencia=${competencia})}">Ver todos os valores</a>
         </div>
         <div class="table-wrap">
             <table id="tabelaFuncionarios">

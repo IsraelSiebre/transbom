@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,17 +23,18 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.*;
 
-@Controller
+@org.springframework.stereotype.Controller
 @RequiredArgsConstructor
-public class ControllerTeste {
+@RequestMapping("/mao-de-obra")
+public class Controller {
 
     private final ConciliacaoPagamentoService conciliacaoService;
     private final CalculoService calculoService;
     private final FuncionarioRepository funcionarioRepository;
 
-    @GetMapping("/")
+    @GetMapping("/upload")
     public String index() {
-        return "upload";
+        return "rh/upload";
     }
 
     @PostMapping("/extracao/processar")
@@ -58,7 +58,7 @@ public class ControllerTeste {
         return ResponseEntity.ok(funcionarios);
     }
 
-    @GetMapping("/dashboard")
+    @GetMapping
     public String dashboard(
             @RequestParam(required = false) LocalDate competencia,
             Model model
@@ -90,7 +90,7 @@ public class ControllerTeste {
         model.addAttribute("totalPorCentroCusto", totalPorCentroCusto);
         model.addAttribute("qntFuncionariosSemCC", qntFuncionariosSemCC);
 
-        return "dashboard";
+        return "rh/dashboard";
     }
 
 
@@ -106,7 +106,7 @@ public class ControllerTeste {
                 "centrosDeCustoExistentes",
                 CentroDeCusto.values()
         );
-        return "funcionarios-sem-cc";
+        return "rh/funcionarios-sem-cc";
     }
 
     @PostMapping("/funcionarios/sem-centro-custo")
@@ -121,7 +121,7 @@ public class ControllerTeste {
                     "Os dados enviados são inconsistentes."
             );
 
-            return "redirect:/funcionarios/sem-centro-custo";
+            return "redirect:/mao-de-obra/funcionarios/sem-centro-custo";
         }
 
         List<Funcionario> funcionariosParaSalvar = new ArrayList<>();
@@ -163,7 +163,17 @@ public class ControllerTeste {
                         " funcionário(s) atualizado(s) com sucesso!"
         );
 
-        return "redirect:/funcionarios/sem-centro-custo";
+        return "redirect:/mao-de-obra/funcionarios/sem-centro-custo";
+    }
+
+    @GetMapping("/detalhamento")
+    public String detalhamento(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate competencia,
+            Model model) {
+        LocalDate mes = (competencia == null ? LocalDate.now() : competencia).withDayOfMonth(1);
+        model.addAttribute("competencia", mes);
+        model.addAttribute("calculos", calculoService.calcularListaMOFuncionarios(mes));
+        return "rh/detalhamento";
     }
 
 }
