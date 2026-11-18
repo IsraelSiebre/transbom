@@ -133,7 +133,7 @@ public class ImportacaoFolhaExcelService {
                 funcionarioImportacao.setValorPorCodigo("SEG.ACIDENTE TRABALHO", toBigDecimal(row.getCell(96).getNumericCellValue()));
                 funcionarioImportacao.setValorPorCodigo("VALOR OUTRAS ENTIDADES", toBigDecimal(row.getCell(97).getNumericCellValue()));
 
-                Optional<Funcionario> funcionarioOptional = funcionarios.findByCodigoExterno((int) row.getCell(4).getNumericCellValue());
+                Optional<Funcionario> funcionarioOptional = funcionarios.findByNome(row.getCell(4).getStringCellValue());
 
                 Funcionario funcionario;
 
@@ -174,9 +174,9 @@ public class ImportacaoFolhaExcelService {
                 .replaceAll("[^A-Z0-9]+", " ").trim().replaceAll("\\s+", " ");
     }
 
-    private final DataFormatter formatter = new DataFormatter();
 
     private String texto(Cell cell) {
+        DataFormatter formatter = new DataFormatter();
         if (cell == null) {
             return "";
         }
