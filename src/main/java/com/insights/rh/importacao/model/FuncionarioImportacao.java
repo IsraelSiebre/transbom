@@ -18,18 +18,10 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
-/**
- * Rubricas importadas da folha de pagamento.
- *
- * Os códigos numéricos correspondem à tabela de origem fornecida; rubricas
- * sem código numérico são identificadas pelo próprio nome textual.
- *
- * ATENÇÃO: nomes de colunas alterados exigem migração de banco (Flyway).
- */
 @Getter
 @Setter
 @Entity
-@Table(name = "folha_pagamento")
+@Table(name = "calculo_funcionarios_mo")
 @NoArgsConstructor
 public class FuncionarioImportacao {
 
@@ -49,7 +41,7 @@ public class FuncionarioImportacao {
 
     /** 981 - ADIANTAMENTO DE SALARIO. */
     @Column(name = "adiantamento_salario_981")
-    private BigDecimal adiantamentoSalario;
+    private BigDecimal adiantamentoDeSalario;
 
     /** 995 - SALARIO FAMILIA. */
     @Column(name = "salario_familia_995")
@@ -57,7 +49,7 @@ public class FuncionarioImportacao {
 
     /** 285 - HORAS EXTRAS 50% (BANCO DE HORAS). */
     @Column(name = "horas_extras_banco_50_285")
-    private BigDecimal bancoHoras50;
+    private BigDecimal horasExtras50Banco;
 
     /** Código textual: LICENCA REMUNERADA. */
     @Column(name = "licenca_remunerada")
@@ -65,7 +57,7 @@ public class FuncionarioImportacao {
 
     /** 873 - PLR. */
     @Column(name = "plr_873")
-    private BigDecimal participacaoLucros;
+    private BigDecimal plr;
 
     /** 150 - HORAS EXTRAS 50%. */
     @Column(name = "horas_extras_50_150")
@@ -81,19 +73,19 @@ public class FuncionarioImportacao {
 
     /** 257 - HORA EXTRA NOTURNA 50%. */
     @Column(name = "horas_extras_noturnas_50_257")
-    private BigDecimal horasExtrasNoturnas50;
+    private BigDecimal horaExtraNoturna50;
 
     /** 226 - ADICIONAL JORNADA NOTURNO 20%. */
     @Column(name = "adicional_jornada_noturna_20_226")
-    private BigDecimal adicionalNoturnoHoraReduzida;
+    private BigDecimal adicionalJornadaNoturno20;
 
     /** 214 - ADICIONAL NOTURNO 20%. */
     @Column(name = "adicional_noturno_20_214")
-    private BigDecimal adicionalNoturnoValor;
+    private BigDecimal adicionalNoturno20;
 
     /** 255 - DIARIAS DE VIAGENS. */
     @Column(name = "diarias_viagens_255")
-    private BigDecimal diariasViagens;
+    private BigDecimal diariasDeViagens;
 
     /** 256 - PERNOITE. */
     @Column(name = "pernoite_256")
@@ -101,7 +93,7 @@ public class FuncionarioImportacao {
 
     /** 16 - INSALUBRIDADE SALARIO. */
     @Column(name = "insalubridade_salario_16")
-    private BigDecimal insalubridade;
+    private BigDecimal insalubridadeSalario;
 
     /** 3 - D.S.R. GERAL. */
     @Column(name = "dsr_geral_3")
@@ -109,7 +101,7 @@ public class FuncionarioImportacao {
 
     /** 260 - ADICIONAL RODOTREN. */
     @Column(name = "adicional_rodotrem_260")
-    private BigDecimal adicionalMotoristaRodotrem;
+    private BigDecimal adicionalRodotren;
 
     /** Código textual: Comissões COM Provisão. */
     @Column(name = "comissoes_com_provisao")
@@ -125,15 +117,15 @@ public class FuncionarioImportacao {
 
     /** Código textual: Provisão de Férias. */
     @Column(name = "provisao_ferias")
-    private BigDecimal provisaoFerias;
+    private BigDecimal provisaoDeFerias;
 
     /** 805 - DIF. MEDIAS FERIAS. */
     @Column(name = "diferenca_medias_ferias_805")
-    private BigDecimal diferencaMediasFerias;
+    private BigDecimal difMediasFerias;
 
     /** Código textual: Provisão de 13º. */
     @Column(name = "provisao_decimo_terceiro")
-    private BigDecimal provisaoDecimoTerceiro;
+    private BigDecimal provisao13Salario;
 
     /** Código textual: Vale Transporte. */
     @Column(name = "vale_transporte")
@@ -145,7 +137,7 @@ public class FuncionarioImportacao {
 
     /** Código textual: Outros Encargos Sociais e Trab. */
     @Column(name = "outros_encargos_sociais_trabalhistas")
-    private BigDecimal outrosEncargosSociaisTrabalhistas;
+    private BigDecimal outrosEncargosSociaisTrab;
 
     /** 250 - REFLEXO EXTRAS DSR. */
     @Column(name = "reflexo_extras_dsr_250")
@@ -153,37 +145,37 @@ public class FuncionarioImportacao {
 
     /** 854 - DSR VARIAVEL S/ ADICIONAL JORNADA NOTURNO 20%. */
     @Column(name = "dsr_variavel_jornada_noturna_20_854")
-    private BigDecimal dsrVariavelAdicionalJornadaNoturna20;
+    private BigDecimal dsrVariavelSAdicJornadaNoturno20;
 
     /** Código textual: D.S.R. S/ ADICIONAL NOTURNO 20%. */
     @Column(name = "dsr_adicional_noturno_20")
-    private BigDecimal dsrAdicionalNoturno20;
+    private BigDecimal dsrSAdicionalNoturno20;
 
     /** Código textual: D.S.R. S/ HORA EXTRA NOTURNA 50%. */
     @Column(name = "dsr_hora_extra_noturna_50")
-    private BigDecimal dsrHoraExtraNoturna50;
+    private BigDecimal dsrSHoraExtraNoturna50;
 
     /** 262 - DSR S/ HORAS EXTRAS 100%. */
     @Column(name = "dsr_horas_extras_100_262")
-    private BigDecimal dsrHorasExtras100;
+    private BigDecimal dsrSHorasExtras100;
 
     /** 225 - ADIANTAMENTO DE DIARIAS DE VIAGEM. */
     @Column(name = "adiantamento_diarias_viagem_225")
-    private BigDecimal adiantamentoDiariasViagem;
+    private BigDecimal adiantamentoDeDiariasDeViagem;
 
     /** 149 - ADICIONAL PERICULOSIDADE. */
     @Column(name = "adicional_periculosidade_149")
-    private BigDecimal periculosidade;
+    private BigDecimal adicionalPericulosidade;
 
     /** 261 - HORAS NORMAIS SALARIO. */
     @Column(name = "horas_normais_salario_261")
-    private BigDecimal horasNormais;
+    private BigDecimal horasNormaisSalario;
 
     // RESCISÃO, FÉRIAS E ABONOS
 
     /** 9591 - R-AVISO PREVIO INDENIZADO. */
     @Column(name = "aviso_previo_indenizado_rescisao_9591")
-    private BigDecimal avisoPrevioIndenizadoRescisao;
+    private BigDecimal rAvisoPrevioIndenizado;
 
     /** 808 - ABONO PECUNIARIO. */
     @Column(name = "abono_pecuniario_808")
@@ -191,7 +183,7 @@ public class FuncionarioImportacao {
 
     /** 932 - 1/3 S/ ABONO PECUNIARIO. */
     @Column(name = "um_terco_abono_pecuniario_932")
-    private BigDecimal umTercoAbonoFerias;
+    private BigDecimal umTercoSAbonoPecuniario;
 
     /** 8800 - DIAS ABONO PECUNIARIO (FERIAS). */
     @Column(name = "dias_abono_pecuniario_8800")
@@ -199,19 +191,19 @@ public class FuncionarioImportacao {
 
     /** 9180 - R-SALDO DE SALARIO. */
     @Column(name = "saldo_salario_rescisao_9180")
-    private BigDecimal saldoSalarioRescisao;
+    private BigDecimal rSaldoDeSalario;
 
     /** 64 - R-ADICIONAL DE FERIAS. */
     @Column(name = "adicional_ferias_rescisao_64")
-    private BigDecimal adicionalFeriasRescisao;
+    private BigDecimal rAdicionalDeFerias;
 
     /** Código textual: R-FERIAS S/ AVISO PREVIO. */
     @Column(name = "ferias_sobre_aviso_previo_rescisao")
-    private BigDecimal feriasAvisoPrevioRescisao;
+    private BigDecimal rFeriasSAvisoPrevio;
 
     /** 51 - VALOR LIQUIDO DA RESCISÃO. */
     @Column(name = "valor_liquido_rescisao_51")
-    private BigDecimal liquidoRescisao;
+    private BigDecimal valorLiquidoDaRescisao;
 
     /** 29 - FERIAS PROPORCIONAIS. */
     @Column(name = "ferias_proporcionais_29")
@@ -219,41 +211,41 @@ public class FuncionarioImportacao {
 
     /** 8552 - R-13o. SALARIO NA RCT. */
     @Column(name = "decimo_terceiro_rescisao_rct_8552")
-    private BigDecimal decimoTerceiroRescisaoRct;
+    private BigDecimal r13SalarioNaRct;
 
     /** 8550 - 13 SALARIO INTEGRAL RESCISAO. */
     @Column(name = "decimo_terceiro_integral_rescisao_8550")
-    private BigDecimal decimoTerceiroIntegralRescisao;
+    private BigDecimal trezeSalarioIntegralRescisao;
 
     /** 8783 - FERIAS NORMAIS MÊS. */
     @Column(name = "ferias_normais_mes_8783")
-    private BigDecimal feriasNormaisMes8783;
+    private BigDecimal feriasNormaisMes;
 
     /** 931 - 1/3 ADICIONAL DE FERIAS. */
     @Column(name = "um_terco_adicional_ferias_931")
-    private BigDecimal umTercoFerias;
+    private BigDecimal umTercoAdicionalDeFerias;
 
     /** 28 - ADICIONAL DE FERIAS. */
     @Column(name = "adicional_ferias_28")
-    private BigDecimal adicionalFerias;
+    private BigDecimal adicionalDeFerias;
 
     /** 9162 - FERIAS NORMAIS MÊS. */
     @Column(name = "ferias_normais_mes_9162")
-    private BigDecimal feriasNormaisMes9162;
+    private BigDecimal feriasNormaisMesRef;
 
     /** 937 - DESC.ADTO.FERIAS MÊS. */
     @Column(name = "desconto_adiantamento_ferias_mes_937")
-    private BigDecimal descontoAdiantamentoFeriasMes;
+    private BigDecimal descAdtoFeriasMes;
 
     /** 8169 - 1/3 ADICIONAL DE FERIAS. */
     @Column(name = "um_terco_adicional_ferias_8169")
-    private BigDecimal umTercoAdicionalFerias8169;
+    private BigDecimal umTercoAdicionalDeFeriasRef;
 
     // IMPOSTOS, ENCARGOS E TOTALIZADORES
 
     /** Código textual: FGTS A RECOLHER. */
     @Column(name = "fgts_a_recolher")
-    private BigDecimal fgtsRecolher;
+    private BigDecimal fgts;
 
     /** 998 - I.N.S.S.. */
     @Column(name = "inss_998")
@@ -261,7 +253,7 @@ public class FuncionarioImportacao {
 
     /** 812 - I.N.S.S. DE FERIAS. */
     @Column(name = "inss_ferias_812")
-    private BigDecimal inssFerias;
+    private BigDecimal inssDeFerias;
 
     /** 989 - I.N.S.S. RESCISAO. */
     @Column(name = "inss_rescisao_989")
@@ -273,23 +265,23 @@ public class FuncionarioImportacao {
 
     /** 942 - I.R.R.F. DE FERIAS. */
     @Column(name = "irrf_ferias_942")
-    private BigDecimal irrfFerias;
+    private BigDecimal irrfDeFerias;
 
     /** Código textual: DESCONTOS TOTAIS. */
     @Column(name = "descontos_totais")
-    private BigDecimal totalDescontos;
+    private BigDecimal descontosTotais;
 
     /** Código textual: Custo M.O Total. */
     @Column(name = "custo_mao_obra_total")
-    private BigDecimal custoMaoObraTotal;
+    private BigDecimal custoMoTotal;
 
     /** 9181 - I.N.S.S. DE FERIAS. */
     @Column(name = "inss_ferias_9181")
-    private BigDecimal inssFerias9181;
+    private BigDecimal inssDeFeriasRef;
 
     /** Código textual: SEG.ACIDENTE TRABALHO. */
     @Column(name = "seguro_acidente_trabalho")
-    private BigDecimal seguroAcidenteTrabalho;
+    private BigDecimal segAcidenteTrabalho;
 
     /** Código textual: VALOR OUTRAS ENTIDADES. */
     @Column(name = "valor_outras_entidades")
@@ -299,47 +291,47 @@ public class FuncionarioImportacao {
 
     /** 208 - SANTA CASA SAUDE. */
     @Column(name = "santa_casa_saude_208")
-    private BigDecimal santaCasaSaude208;
+    private BigDecimal santaCasaSaudeAdic;
 
     /** 170 - CONVENIO ODONTOLóGICO. */
     @Column(name = "convenio_odontologico_170")
-    private BigDecimal convenioOdontologico170;
+    private BigDecimal convenioOdontologicoAdic;
 
     /** 258 - SANTA CASA SAUDE. */
     @Column(name = "santa_casa_saude_258")
-    private BigDecimal santaCasaSaude258;
+    private BigDecimal santaCasaSaudeDesc;
 
     /** 259 - CONVENIO ODONTOLóGICO. */
     @Column(name = "convenio_odontologico_259")
-    private BigDecimal planoOdontologico;
+    private BigDecimal convenioOdontologicoDesc;
 
     /** 277 - CONVENIO - ANA COSTA SAÚDE. */
     @Column(name = "convenio_ana_costa_saude_277")
-    private BigDecimal convenioAnaCosta;
+    private BigDecimal convenioAnaCostaSaude;
 
     /** 282 - CONVENIO SAUDE. */
     @Column(name = "convenio_saude_282")
-    private BigDecimal convenioSaudeTitular;
+    private BigDecimal convenioSaude;
 
     /** 271 - VALE - DIVERSOS. */
     @Column(name = "vales_diversos_271")
-    private BigDecimal valesDiversos;
+    private BigDecimal valeDiversos;
 
     /** 275 - PENSAO ALIMENTICIA 25% SAL LÍQ. */
     @Column(name = "pensao_alimenticia_liquido_25_275")
-    private BigDecimal pensaoAlimenticiaLiquido25;
+    private BigDecimal pensaoAlimenticia25SalLiq;
 
     /** 205 - DESCONTO EMPRESTIMO. */
     @Column(name = "desconto_emprestimo_205")
-    private BigDecimal emprestimo;
+    private BigDecimal descontoEmprestimo;
 
     /** 280 - CONVENIO SAUDE COOPART. */
     @Column(name = "convenio_saude_coparticipacao_280")
-    private BigDecimal convenioSaudeCoparticipacao;
+    private BigDecimal convenioSaudeCoopart;
 
     /** 265 - CONVENIO DE FARMÁCIA. */
     @Column(name = "convenio_farmacia_265")
-    private BigDecimal descontoFarmacia;
+    private BigDecimal convenioDeFarmacia;
 
     /** 267 - CONVENIO SEGUROS. */
     @Column(name = "convenio_seguros_267")
@@ -347,11 +339,11 @@ public class FuncionarioImportacao {
 
     /** 242 - MULTAS DE TRANSITO. */
     @Column(name = "multas_transito_242")
-    private BigDecimal multaTransito;
+    private BigDecimal multasDeTransito;
 
     /** 900 - PENSAO ALIMENTICIA 25% SAL. */
     @Column(name = "pensao_alimenticia_salario_25_900")
-    private BigDecimal pensaoAlimenticiaSalario25;
+    private BigDecimal pensaoAlimenticia25Sal;
 
     /** 89 - PENHORA. */
     @Column(name = "penhora_89")
@@ -365,19 +357,19 @@ public class FuncionarioImportacao {
 
     /** 8069 - FALTAS INJUST. EM HORAS. */
     @Column(name = "faltas_injustificadas_horas_8069")
-    private BigDecimal faltasInjustificadasHoras;
+    private BigDecimal faltasInjustEmHoras;
 
     /** 8785 - DIAS AFAST.INSS (P/DOENCA). */
     @Column(name = "dias_afastamento_inss_doenca_8785")
-    private BigDecimal diasAfastamentoInssDoenca;
+    private BigDecimal diasAfastInssPDoenca;
 
     /** 9988 - FALTAS INJUST. DSR EM HORAS. */
     @Column(name = "faltas_injustificadas_dsr_horas_9988")
-    private BigDecimal faltasInjustificadasDsrHoras;
+    private BigDecimal faltasInjustDsrEmHoras;
 
     /** 9522 - AFASTAMENTO DOENÇAS DIAS SEMPRE. */
     @Column(name = "afastamento_doenca_dias_sempre_9522")
-    private BigDecimal afastamentoDoencaDiasSempre;
+    private BigDecimal afastamentoDoencasDiasSempre;
 
     // RUBRICAS LEGADAS NÃO PRESENTES NA NOVA TABELA
 
@@ -583,10 +575,7 @@ public class FuncionarioImportacao {
         this.competencia = data;
     }
 
-    /**
-     * Normaliza códigos extraídos do Excel (ex.: 264.0) e nomes de rubricas
-     * sem código numérico, com ou sem acentos/pontuação.
-     */
+
     private static String normalizarCodigo(String codigo) {
         if (codigo == null) return null;
         String normalizado = codigo.trim().toUpperCase(Locale.ROOT)
@@ -599,7 +588,6 @@ public class FuncionarioImportacao {
         return normalizado;
     }
 
-    /** Atribui valor a uma rubrica pelo código numérico ou textual. */
     public void setValorPorCodigo(String codigo, BigDecimal valor) {
         if (codigo == null || valor == null) return;
 
@@ -607,86 +595,86 @@ public class FuncionarioImportacao {
 
             case "8781" -> this.salario = valor;
             case "9380" -> this.proLabore = valor;
-            case "981" -> this.adiantamentoSalario = valor;
+            case "981" -> this.adiantamentoDeSalario = valor;
             case "995" -> this.salarioFamilia = valor;
-            case "285" -> this.bancoHoras50 = valor;
+            case "285" -> this.horasExtras50Banco = valor;
             case "LICENCA REMUNERADA" -> this.licencaRemunerada = valor;
-            case "873" -> this.participacaoLucros = valor;
+            case "873" -> this.plr = valor;
             case "150" -> this.horasExtras50 = valor;
             case "264" -> this.horasExtrasNoturnas100 = valor;
             case "200" -> this.horasExtras100 = valor;
-            case "257" -> this.horasExtrasNoturnas50 = valor;
-            case "226" -> this.adicionalNoturnoHoraReduzida = valor;
-            case "214" -> this.adicionalNoturnoValor = valor;
-            case "255" -> this.diariasViagens = valor;
+            case "257" -> this.horaExtraNoturna50 = valor;
+            case "226" -> this.adicionalJornadaNoturno20 = valor;
+            case "214" -> this.adicionalNoturno20 = valor;
+            case "255" -> this.diariasDeViagens = valor;
             case "256" -> this.pernoite = valor;
-            case "16" -> this.insalubridade = valor;
+            case "16" -> this.insalubridadeSalario = valor;
             case "3" -> this.dsrGeral = valor;
-            case "260" -> this.adicionalMotoristaRodotrem = valor;
+            case "260" -> this.adicionalRodotren = valor;
             case "COMISSOES COM PROVISAO" -> this.comissoesComProvisao = valor;
             case "COMISSOES SEM PROVISAO" -> this.comissoesSemProvisao = valor;
             case "CESTA BASICA" -> this.cestaBasica = valor;
-            case "PROVISAO DE FERIAS" -> this.provisaoFerias = valor;
-            case "805" -> this.diferencaMediasFerias = valor;
-            case "PROVISAO DE 13" -> this.provisaoDecimoTerceiro = valor;
+            case "PROVISAO DE FERIAS" -> this.provisaoDeFerias = valor;
+            case "805" -> this.difMediasFerias = valor;
+            case "PROVISAO DE 13" -> this.provisao13Salario = valor;
             case "VALE TRANSPORTE" -> this.valeTransporte = valor;
             case "VALE REFEICAO" -> this.valeRefeicao = valor;
-            case "OUTROS ENCARGOS SOCIAIS E TRAB" -> this.outrosEncargosSociaisTrabalhistas = valor;
-            case "9591" -> this.avisoPrevioIndenizadoRescisao = valor;
+            case "OUTROS ENCARGOS SOCIAIS E TRAB" -> this.outrosEncargosSociaisTrab = valor;
+            case "9591" -> this.rAvisoPrevioIndenizado = valor;
             case "250" -> this.reflexoExtrasDsr = valor;
-            case "854" -> this.dsrVariavelAdicionalJornadaNoturna20 = valor;
-            case "DSR S ADICIONAL NOTURNO 20" -> this.dsrAdicionalNoturno20 = valor;
-            case "DSR S HORA EXTRA NOTURNA 50" -> this.dsrHoraExtraNoturna50 = valor;
-            case "262" -> this.dsrHorasExtras100 = valor;
+            case "854" -> this.dsrVariavelSAdicJornadaNoturno20 = valor;
+            case "DSR S ADICIONAL NOTURNO 20" -> this.dsrSAdicionalNoturno20 = valor;
+            case "DSR S HORA EXTRA NOTURNA 50" -> this.dsrSHoraExtraNoturna50 = valor;
+            case "262" -> this.dsrSHorasExtras100 = valor;
             case "808" -> this.abonoPecuniario = valor;
-            case "932" -> this.umTercoAbonoFerias = valor;
+            case "932" -> this.umTercoSAbonoPecuniario = valor;
             case "8800" -> this.diasAbonoPecuniarioFerias = valor;
-            case "9180" -> this.saldoSalarioRescisao = valor;
-            case "64" -> this.adicionalFeriasRescisao = valor;
-            case "R FERIAS S AVISO PREVIO" -> this.feriasAvisoPrevioRescisao = valor;
-            case "51" -> this.liquidoRescisao = valor;
+            case "9180" -> this.rSaldoDeSalario = valor;
+            case "64" -> this.rAdicionalDeFerias = valor;
+            case "R FERIAS S AVISO PREVIO" -> this.rFeriasSAvisoPrevio = valor;
+            case "51" -> this.valorLiquidoDaRescisao = valor;
             case "29" -> this.feriasProporcionais = valor;
-            case "8552" -> this.decimoTerceiroRescisaoRct = valor;
-            case "8550" -> this.decimoTerceiroIntegralRescisao = valor;
-            case "FGTS A RECOLHER", "FGTS" -> this.fgtsRecolher = valor;
-            case "8783" -> this.feriasNormaisMes8783 = valor;
-            case "931" -> this.umTercoFerias = valor;
-            case "28" -> this.adicionalFerias = valor;
-            case "208" -> this.santaCasaSaude208 = valor;
-            case "170" -> this.convenioOdontologico170 = valor;
-            case "258" -> this.santaCasaSaude258 = valor;
-            case "259" -> this.planoOdontologico = valor;
-            case "277" -> this.convenioAnaCosta = valor;
-            case "282" -> this.convenioSaudeTitular = valor;
-            case "271" -> this.valesDiversos = valor;
-            case "275" -> this.pensaoAlimenticiaLiquido25 = valor;
-            case "205" -> this.emprestimo = valor;
-            case "8069" -> this.faltasInjustificadasHoras = valor;
-            case "280" -> this.convenioSaudeCoparticipacao = valor;
-            case "265" -> this.descontoFarmacia = valor;
+            case "8552" -> this.r13SalarioNaRct = valor;
+            case "8550" -> this.trezeSalarioIntegralRescisao = valor;
+            case "FGTS A RECOLHER", "FGTS" -> this.fgts = valor;
+            case "8783" -> this.feriasNormaisMes = valor;
+            case "931" -> this.umTercoAdicionalDeFerias = valor;
+            case "28" -> this.adicionalDeFerias = valor;
+            case "208" -> this.santaCasaSaudeAdic = valor;
+            case "170" -> this.convenioOdontologicoAdic = valor;
+            case "258" -> this.santaCasaSaudeDesc = valor;
+            case "259" -> this.convenioOdontologicoDesc = valor;
+            case "277" -> this.convenioAnaCostaSaude = valor;
+            case "282" -> this.convenioSaude = valor;
+            case "271" -> this.valeDiversos = valor;
+            case "275" -> this.pensaoAlimenticia25SalLiq = valor;
+            case "205" -> this.descontoEmprestimo = valor;
+            case "8069" -> this.faltasInjustEmHoras = valor;
+            case "280" -> this.convenioSaudeCoopart = valor;
+            case "265" -> this.convenioDeFarmacia = valor;
             case "267" -> this.convenioSeguros = valor;
-            case "242" -> this.multaTransito = valor;
+            case "242" -> this.multasDeTransito = valor;
             case "998" -> this.inss = valor;
-            case "812" -> this.inssFerias = valor;
-            case "8785" -> this.diasAfastamentoInssDoenca = valor;
+            case "812" -> this.inssDeFerias = valor;
+            case "8785" -> this.diasAfastInssPDoenca = valor;
             case "989" -> this.inssRescisao = valor;
             case "96" -> this.irrf = valor;
-            case "942" -> this.irrfFerias = valor;
-            case "DESCONTOS TOTAIS", "TOTAL DE DESCONTOS", "TOTAL DESCONTOS" -> this.totalDescontos = valor;
-            case "CUSTO M O TOTAL", "CUSTO MO TOTAL" -> this.custoMaoObraTotal = valor;
-            case "900" -> this.pensaoAlimenticiaSalario25 = valor;
-            case "9162" -> this.feriasNormaisMes9162 = valor;
-            case "937" -> this.descontoAdiantamentoFeriasMes = valor;
-            case "225" -> this.adiantamentoDiariasViagem = valor;
-            case "9181" -> this.inssFerias9181 = valor;
-            case "8169" -> this.umTercoAdicionalFerias8169 = valor;
-            case "149" -> this.periculosidade = valor;
-            case "261" -> this.horasNormais = valor;
+            case "942" -> this.irrfDeFerias = valor;
+            case "DESCONTOS TOTAIS", "TOTAL DE DESCONTOS", "TOTAL DESCONTOS" -> this.descontosTotais = valor;
+            case "CUSTO M O TOTAL", "CUSTO MO TOTAL" -> this.custoMoTotal = valor;
+            case "900" -> this.pensaoAlimenticia25Sal = valor;
+            case "9162" -> this.feriasNormaisMesRef = valor;
+            case "937" -> this.descAdtoFeriasMes = valor;
+            case "225" -> this.adiantamentoDeDiariasDeViagem = valor;
+            case "9181" -> this.inssDeFeriasRef = valor;
+            case "8169" -> this.umTercoAdicionalDeFeriasRef = valor;
+            case "149" -> this.adicionalPericulosidade = valor;
+            case "261" -> this.horasNormaisSalario = valor;
             case "89" -> this.penhora = valor;
-            case "9988" -> this.faltasInjustificadasDsrHoras = valor;
-            case "9522" -> this.afastamentoDoencaDiasSempre = valor;
+            case "9988" -> this.faltasInjustDsrEmHoras = valor;
+            case "9522" -> this.afastamentoDoencasDiasSempre = valor;
             case "146" -> this.reembolso = valor;
-            case "SEG ACIDENTE TRABALHO" -> this.seguroAcidenteTrabalho = valor;
+            case "SEG ACIDENTE TRABALHO" -> this.segAcidenteTrabalho = valor;
             case "VALOR OUTRAS ENTIDADES" -> this.valorOutrasEntidades = valor;
             case "9360" -> this.dsrHoristaVariavel = valor;
             case "278" -> this.convenioNotredame = valor;
@@ -730,16 +718,17 @@ public class FuncionarioImportacao {
             case "BASE IRRF" -> this.baseIrrf = valor;
             case "TOTAL DE VENCIMENTOS" -> this.totalVencimentos = valor;
             case "TOTAL LIQUIDO" -> this.totalLiquido = valor;
+            case "VALE TRANSPORTE POR FORA" -> this.valeTransportePorFora = valor;
+            case "VALE REFEICAO POR FORA" -> this.valeRefeicaoPorFora = valor;
+            case "GRATIFICACAO POR FORA" -> this.gratificacaoPorFora = valor;
+            case "COMISSOES POR FORA" -> this.comissoesPorFora = valor;
+            case "VALOR BEST PONTOS" -> this.valorBestPontos = valor;
             default -> throw new IllegalArgumentException(
                     "Código de rubrica desconhecido: " + codigo);
         }
     }
 
-    /**
-     * Obtém o valor de uma rubrica; mantém a convenção anterior:
-     * código desconhecido devolve ZERO, e campo conhecido não preenchido
-     * devolve null.
-     */
+
     public BigDecimal getValorPorCodigo(String codigo) {
         if (codigo == null) return null;
 
@@ -747,86 +736,86 @@ public class FuncionarioImportacao {
 
             case "8781" -> this.salario;
             case "9380" -> this.proLabore;
-            case "981" -> this.adiantamentoSalario;
+            case "981" -> this.adiantamentoDeSalario;
             case "995" -> this.salarioFamilia;
-            case "285" -> this.bancoHoras50;
+            case "285" -> this.horasExtras50Banco;
             case "LICENCA REMUNERADA" -> this.licencaRemunerada;
-            case "873" -> this.participacaoLucros;
+            case "873" -> this.plr;
             case "150" -> this.horasExtras50;
             case "264" -> this.horasExtrasNoturnas100;
             case "200" -> this.horasExtras100;
-            case "257" -> this.horasExtrasNoturnas50;
-            case "226" -> this.adicionalNoturnoHoraReduzida;
-            case "214" -> this.adicionalNoturnoValor;
-            case "255" -> this.diariasViagens;
+            case "257" -> this.horaExtraNoturna50;
+            case "226" -> this.adicionalJornadaNoturno20;
+            case "214" -> this.adicionalNoturno20;
+            case "255" -> this.diariasDeViagens;
             case "256" -> this.pernoite;
-            case "16" -> this.insalubridade;
+            case "16" -> this.insalubridadeSalario;
             case "3" -> this.dsrGeral;
-            case "260" -> this.adicionalMotoristaRodotrem;
+            case "260" -> this.adicionalRodotren;
             case "COMISSOES COM PROVISAO" -> this.comissoesComProvisao;
             case "COMISSOES SEM PROVISAO" -> this.comissoesSemProvisao;
             case "CESTA BASICA" -> this.cestaBasica;
-            case "PROVISAO DE FERIAS" -> this.provisaoFerias;
-            case "805" -> this.diferencaMediasFerias;
-            case "PROVISAO DE 13" -> this.provisaoDecimoTerceiro;
+            case "PROVISAO DE FERIAS" -> this.provisaoDeFerias;
+            case "805" -> this.difMediasFerias;
+            case "PROVISAO DE 13" -> this.provisao13Salario;
             case "VALE TRANSPORTE" -> this.valeTransporte;
             case "VALE REFEICAO" -> this.valeRefeicao;
-            case "OUTROS ENCARGOS SOCIAIS E TRAB" -> this.outrosEncargosSociaisTrabalhistas;
-            case "9591" -> this.avisoPrevioIndenizadoRescisao;
+            case "OUTROS ENCARGOS SOCIAIS E TRAB" -> this.outrosEncargosSociaisTrab;
+            case "9591" -> this.rAvisoPrevioIndenizado;
             case "250" -> this.reflexoExtrasDsr;
-            case "854" -> this.dsrVariavelAdicionalJornadaNoturna20;
-            case "DSR S ADICIONAL NOTURNO 20" -> this.dsrAdicionalNoturno20;
-            case "DSR S HORA EXTRA NOTURNA 50" -> this.dsrHoraExtraNoturna50;
-            case "262" -> this.dsrHorasExtras100;
+            case "854" -> this.dsrVariavelSAdicJornadaNoturno20;
+            case "DSR S ADICIONAL NOTURNO 20" -> this.dsrSAdicionalNoturno20;
+            case "DSR S HORA EXTRA NOTURNA 50" -> this.dsrSHoraExtraNoturna50;
+            case "262" -> this.dsrSHorasExtras100;
             case "808" -> this.abonoPecuniario;
-            case "932" -> this.umTercoAbonoFerias;
+            case "932" -> this.umTercoSAbonoPecuniario;
             case "8800" -> this.diasAbonoPecuniarioFerias;
-            case "9180" -> this.saldoSalarioRescisao;
-            case "64" -> this.adicionalFeriasRescisao;
-            case "R FERIAS S AVISO PREVIO" -> this.feriasAvisoPrevioRescisao;
-            case "51" -> this.liquidoRescisao;
+            case "9180" -> this.rSaldoDeSalario;
+            case "64" -> this.rAdicionalDeFerias;
+            case "R FERIAS S AVISO PREVIO" -> this.rFeriasSAvisoPrevio;
+            case "51" -> this.valorLiquidoDaRescisao;
             case "29" -> this.feriasProporcionais;
-            case "8552" -> this.decimoTerceiroRescisaoRct;
-            case "8550" -> this.decimoTerceiroIntegralRescisao;
-            case "FGTS A RECOLHER", "FGTS" -> this.fgtsRecolher;
-            case "8783" -> this.feriasNormaisMes8783;
-            case "931" -> this.umTercoFerias;
-            case "28" -> this.adicionalFerias;
-            case "208" -> this.santaCasaSaude208;
-            case "170" -> this.convenioOdontologico170;
-            case "258" -> this.santaCasaSaude258;
-            case "259" -> this.planoOdontologico;
-            case "277" -> this.convenioAnaCosta;
-            case "282" -> this.convenioSaudeTitular;
-            case "271" -> this.valesDiversos;
-            case "275" -> this.pensaoAlimenticiaLiquido25;
-            case "205" -> this.emprestimo;
-            case "8069" -> this.faltasInjustificadasHoras;
-            case "280" -> this.convenioSaudeCoparticipacao;
-            case "265" -> this.descontoFarmacia;
+            case "8552" -> this.r13SalarioNaRct;
+            case "8550" -> this.trezeSalarioIntegralRescisao;
+            case "FGTS A RECOLHER", "FGTS" -> this.fgts;
+            case "8783" -> this.feriasNormaisMes;
+            case "931" -> this.umTercoAdicionalDeFerias;
+            case "28" -> this.adicionalDeFerias;
+            case "208" -> this.santaCasaSaudeAdic;
+            case "170" -> this.convenioOdontologicoAdic;
+            case "258" -> this.santaCasaSaudeDesc;
+            case "259" -> this.convenioOdontologicoDesc;
+            case "277" -> this.convenioAnaCostaSaude;
+            case "282" -> this.convenioSaude;
+            case "271" -> this.valeDiversos;
+            case "275" -> this.pensaoAlimenticia25SalLiq;
+            case "205" -> this.descontoEmprestimo;
+            case "8069" -> this.faltasInjustEmHoras;
+            case "280" -> this.convenioSaudeCoopart;
+            case "265" -> this.convenioDeFarmacia;
             case "267" -> this.convenioSeguros;
-            case "242" -> this.multaTransito;
+            case "242" -> this.multasDeTransito;
             case "998" -> this.inss;
-            case "812" -> this.inssFerias;
-            case "8785" -> this.diasAfastamentoInssDoenca;
+            case "812" -> this.inssDeFerias;
+            case "8785" -> this.diasAfastInssPDoenca;
             case "989" -> this.inssRescisao;
             case "96" -> this.irrf;
-            case "942" -> this.irrfFerias;
-            case "DESCONTOS TOTAIS", "TOTAL DE DESCONTOS", "TOTAL DESCONTOS" -> this.totalDescontos;
-            case "CUSTO M O TOTAL", "CUSTO MO TOTAL" -> this.custoMaoObraTotal;
-            case "900" -> this.pensaoAlimenticiaSalario25;
-            case "9162" -> this.feriasNormaisMes9162;
-            case "937" -> this.descontoAdiantamentoFeriasMes;
-            case "225" -> this.adiantamentoDiariasViagem;
-            case "9181" -> this.inssFerias9181;
-            case "8169" -> this.umTercoAdicionalFerias8169;
-            case "149" -> this.periculosidade;
-            case "261" -> this.horasNormais;
+            case "942" -> this.irrfDeFerias;
+            case "DESCONTOS TOTAIS", "TOTAL DE DESCONTOS", "TOTAL DESCONTOS" -> this.descontosTotais;
+            case "CUSTO M O TOTAL", "CUSTO MO TOTAL" -> this.custoMoTotal;
+            case "900" -> this.pensaoAlimenticia25Sal;
+            case "9162" -> this.feriasNormaisMesRef;
+            case "937" -> this.descAdtoFeriasMes;
+            case "225" -> this.adiantamentoDeDiariasDeViagem;
+            case "9181" -> this.inssDeFeriasRef;
+            case "8169" -> this.umTercoAdicionalDeFeriasRef;
+            case "149" -> this.adicionalPericulosidade;
+            case "261" -> this.horasNormaisSalario;
             case "89" -> this.penhora;
-            case "9988" -> this.faltasInjustificadasDsrHoras;
-            case "9522" -> this.afastamentoDoencaDiasSempre;
+            case "9988" -> this.faltasInjustDsrEmHoras;
+            case "9522" -> this.afastamentoDoencasDiasSempre;
             case "146" -> this.reembolso;
-            case "SEG ACIDENTE TRABALHO" -> this.seguroAcidenteTrabalho;
+            case "SEG ACIDENTE TRABALHO" -> this.segAcidenteTrabalho;
             case "VALOR OUTRAS ENTIDADES" -> this.valorOutrasEntidades;
             case "9360" -> this.dsrHoristaVariavel;
             case "278" -> this.convenioNotredame;
@@ -870,6 +859,11 @@ public class FuncionarioImportacao {
             case "BASE IRRF" -> this.baseIrrf;
             case "TOTAL DE VENCIMENTOS" -> this.totalVencimentos;
             case "TOTAL LIQUIDO" -> this.totalLiquido;
+            case "VALE TRANSPORTE POR FORA" -> this.valeTransportePorFora;
+            case "VALE REFEICAO POR FORA" -> this.valeRefeicaoPorFora;
+            case "GRATIFICACAO POR FORA" -> this.gratificacaoPorFora;
+            case "COMISSOES POR FORA" -> this.comissoesPorFora;
+            case "VALOR BEST PONTOS" -> this.valorBestPontos;
             default -> BigDecimal.ZERO;
         };
     }

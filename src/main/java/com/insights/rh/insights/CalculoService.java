@@ -347,9 +347,6 @@ public class CalculoService {
 
             );
 
-            if(funcionarioCalculo.nome().equalsIgnoreCase("ADENILSON CAMPOS SENA")) {
-                System.out.println(funcionarioCalculo.toString());
-            }
             listaCalculos.add(funcionarioCalculo);
         }
 

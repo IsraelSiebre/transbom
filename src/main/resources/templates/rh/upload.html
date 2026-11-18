@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" th:content="${_csrf.token}">
+    <meta name="csrf-header" th:content="${_csrf.headerName}">
     <title>Importação de Mão de Obra</title>
 
     <style>
@@ -240,6 +242,7 @@
 
             const response = await fetch(form.action, {
                 method: "POST",
+                headers: { [document.querySelector('meta[name="csrf-header"]').content]: document.querySelector('meta[name="csrf-token"]').content },
                 body: formData
             });
 

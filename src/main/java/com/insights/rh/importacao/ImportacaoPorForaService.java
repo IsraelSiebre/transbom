@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.*;
 
 @Service
@@ -22,7 +23,7 @@ public class ImportacaoPorForaService {
         }
 
         List<Linha> linhasRicieri = new ArrayList<>();
-        Map<String, Double> linhasBestPontos = new LinkedHashMap<>();
+        Map<String, BigDecimal> linhasBestPontos = new LinkedHashMap<>();
 
         try (InputStream entrada = arquivo.getInputStream();
              Workbook workbook = WorkbookFactory.create(entrada)) {
@@ -110,7 +111,7 @@ public class ImportacaoPorForaService {
                     continue;
                 }
 
-                Double valor = lerNumero(row.getCell(7)); // H
+                BigDecimal valor = lerNumero(row.getCell(7)); // H
 
                 linhasBestPontos.put(nome, valor);
             }
@@ -141,7 +142,7 @@ public class ImportacaoPorForaService {
     // LEITURA SEGURA DE NÚMEROS
     // ============================
 
-    private Double lerNumero(Cell cell) {
+    private BigDecimal lerNumero(Cell cell) {
 
         if (cell == null) {
             return null;
@@ -155,7 +156,7 @@ public class ImportacaoPorForaService {
 
         return switch (tipo) {
 
-            case NUMERIC -> cell.getNumericCellValue();
+            case NUMERIC -> BigDecimal.valueOf(cell.getNumericCellValue());
 
             case STRING -> {
                 String texto = cell.getStringCellValue().trim();
@@ -167,11 +168,12 @@ public class ImportacaoPorForaService {
                 try {
                     texto = texto
                             .replace("R$", "")
-                            .replace(" ", "")
-                            .replace(".", "")
-                            .replace(",", ".");
+                            .replace(" ", "");
+                    if (texto.contains(",")) {
+                        texto = texto.replace(".", "").replace(",", ".");
+                    }
 
-                    yield Double.parseDouble(texto);
+                    yield new BigDecimal(texto);
 
                 } catch (NumberFormatException ex) {
                     yield null;
@@ -188,14 +190,14 @@ public class ImportacaoPorForaService {
 
     public record ResultadoExtracao(
             List<Linha> linhasRicieri,
-            Map<String, Double> linhasBestPontos
+            Map<String, BigDecimal> linhasBestPontos
     ) {}
 
     public record Linha(
             String nome,
-            Double valeTransporte,
-            Double valeRefeicao,
-            Double gratificacao,
-            Double comissoes
+            BigDecimal valeTransporte,
+            BigDecimal valeRefeicao,
+            BigDecimal gratificacao,
+            BigDecimal comissoes
     ) {}
 }
