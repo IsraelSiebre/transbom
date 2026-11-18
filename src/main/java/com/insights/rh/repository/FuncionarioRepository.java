@@ -14,4 +14,6 @@ public interface FuncionarioRepository extends JpaRepository<Funcionario, Intege
     List<Funcionario> findByCentroDeCustoEmptyOrNull();
 
     Optional<Funcionario> findById(Long funcionarioId);
+
+    Optional<Funcionario> findByCodigoExterno(int codigo);
 }

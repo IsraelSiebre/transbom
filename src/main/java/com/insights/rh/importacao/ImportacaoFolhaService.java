@@ -98,9 +98,9 @@ public class ImportacaoFolhaService {
             funcionario.setBaseInss(baseInss);
             funcionario.setBaseIrrf(baseIrrf);
             funcionario.setBaseFgts(baseFgts);
-            funcionario.setFgtsRecolher(fgts);
+            funcionario.setFgts(fgts);
             funcionario.setTotalVencimentos(vencimentos);
-            funcionario.setTotalDescontos(descontos);
+            funcionario.setDescontosTotais(descontos);
 
             if (vencimentos != null && descontos != null) {
                 funcionario.setTotalLiquido(vencimentos.subtract(descontos));
@@ -109,7 +109,7 @@ public class ImportacaoFolhaService {
             // Estimativas: confirme as alíquotas e as exceções da folha de origem.
             // A planilha pode registrar encargos zerados mesmo com base positiva.
             if (baseInss != null) {
-                funcionario.setSeguroAcidenteTrabalho(
+                funcionario.setSegAcidenteTrabalho(
                         baseInss.multiply(ALIQUOTA_RAT).setScale(2, RoundingMode.HALF_UP));
                 funcionario.setValorOutrasEntidades(
                         baseInss.multiply(ALIQUOTA_TERCEIROS).setScale(2, RoundingMode.HALF_UP));

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" th:content="${_csrf.token}">
+    <meta name="csrf-header" th:content="${_csrf.headerName}">
+    <title>Importação de Folha</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 400px;
+            max-width: calc(100% - 40px);
+            box-sizing: border-box;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #111827;
+        }
+
+        p {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        #resultado {
+            margin-top: 20px;
+            font-size: 14px;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <h2>Importar Folha de Pagamento</h2>
+    <p>Selecione a planilha Excel para importar os funcionários e os valores da folha.</p>
+
+    <form id="formImportacao">
+        <input
+                type="file"
+                name="arquivo"
+                accept=".xlsx"
+                required
+        >
+
+        <button type="submit" id="botao">
+            Importar Planilha
+        </button>
+    </form>
+
+    <div id="resultado"></div>
+</div>
+
+<script>
+    const form = document.getElementById("formImportacao");
+    const resultado = document.getElementById("resultado");
+    const botao = document.getElementById("botao");
+
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const dados = new FormData(form);
+
+        botao.disabled = true;
+        botao.textContent = "Importando...";
+        resultado.textContent = "Processando planilha...";
+        resultado.style.color = "#374151";
+
+        try {
+            const resposta = await fetch("/mao-de-obra/folha", {
+                method: "POST",
+                headers: { [document.querySelector('meta[name="csrf-header"]').content]: document.querySelector('meta[name="csrf-token"]').content },
+                body: dados
+            });
+
+            const texto = await resposta.text();
+
+            if (!resposta.ok) {
+                throw new Error(texto);
+            }
+
+            resultado.style.color = "#15803d";
+            resultado.textContent =
+                "Importação concluída!\n\n" +
+                JSON.stringify(JSON.parse(texto), null, 2);
+
+        } catch (erro) {
+            resultado.style.color = "#dc2626";
+            resultado.textContent =
+                "Erro na importação:\n" + erro.message;
+        } finally {
+            botao.disabled = false;
+            botao.textContent = "Importar Planilha";
+        }
+    });
+</script>
+</body>
+</html>

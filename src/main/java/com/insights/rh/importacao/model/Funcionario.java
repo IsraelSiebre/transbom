@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter;
 @Getter
 @Setter
 @Entity
-@Table(name = "funcionario")
+@Table(name = "funcionarios_mo")
 @RequiredArgsConstructor
 public class Funcionario {
 
@@ -26,8 +26,11 @@ public class Funcionario {
     @Column(name = "cpf")
     private String cpf;
 
+    @Column(name = "codigo_externo")
+    private Integer codigoExterno;
+
     @Column(name = "empresa")
-    private String Empresa;
+    private String empresa;
 
     @Column(name = "cargo")
     private String cargo;
@@ -46,6 +49,24 @@ public class Funcionario {
 
     public void setDataAdmissao(LocalDate data) {
         this.dataAdmissao = data;
+    }
+
+    public void setCentroDeCusto(CentroDeCusto centroDeCusto) {
+        this.centroDeCusto = centroDeCusto;
+    }
+
+    public void setCentroDeCusto(String cc) {
+        switch (cc) {
+            case "ADM" -> this.centroDeCusto = CentroDeCusto.ADM;
+            case "COL / ENT", "COL/ENT", "COL_ENT" -> this.centroDeCusto = CentroDeCusto.COL_ENT;
+            case "COM" -> this.centroDeCusto = CentroDeCusto.COM;
+            case "DIRETOR" -> this.centroDeCusto = CentroDeCusto.DIRETOR;
+            case "OFI" -> this.centroDeCusto = CentroDeCusto.OFI;
+            case "TERM" -> this.centroDeCusto = CentroDeCusto.TERM;
+            case "TRAF" -> this.centroDeCusto = CentroDeCusto.TRAF;
+            case "TRANSF" -> this.centroDeCusto = CentroDeCusto.TRANSF;
+
+        }
     }
 
 }

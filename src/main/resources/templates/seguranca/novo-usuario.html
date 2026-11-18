@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Novo usuário</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f2f5f9; color: #1d2939; margin: 0; }
+        main { max-width: 420px; margin: 4rem auto; padding: 2rem; background: white; border-radius: 8px; box-shadow: 0 2px 10px #0001; }
+        label { display: block; margin: 1rem 0 .4rem; font-weight: bold; }
+        input { box-sizing: border-box; width: 100%; padding: .7rem; border: 1px solid #9da9b9; border-radius: 4px; }
+        button { margin-top: 1.25rem; padding: .7rem 1.2rem; border: 0; border-radius: 4px; background: #164f8c; color: white; cursor: pointer; }
+        .erro { color: #a01616; } .sucesso { color: #176a3a; } a { color: #164f8c; }
+    </style>
+</head>
+<body>
+<main>
+    <h1>Criar usuário</h1>
+    <p th:if="${erro}" th:text="${erro}" class="erro" role="alert"></p>
+    <p th:if="${param.sucesso}" class="sucesso" role="status">Usuário criado com sucesso.</p>
+    <form th:action="@{/usuarios/novo}" method="post">
+        <label for="username">Usuário</label>
+        <input id="username" name="username" th:value="${username}" required minlength="3" maxlength="50" autocomplete="off">
+        <label for="senha">Senha</label>
+        <input id="senha" name="senha" type="password" required minlength="8" autocomplete="new-password">
+        <label for="confirmacaoSenha">Confirmar senha</label>
+        <input id="confirmacaoSenha" name="confirmacaoSenha" type="password" required minlength="8" autocomplete="new-password">
+        <button type="submit">Criar usuário</button>
+    </form>
+    <p><a th:href="@{/mao-de-obra}">Voltar ao painel</a></p>
+</main>
+</body>
+</html>

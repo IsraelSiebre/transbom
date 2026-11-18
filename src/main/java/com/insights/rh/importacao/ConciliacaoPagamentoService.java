@@ -133,24 +133,24 @@ public class ConciliacaoPagamentoService {
             );
 
             registro.setValeTransportePorFora(
-                    converter(linha.valeTransporte())
+                    linha.valeTransporte()
             );
 
             registro.setValeRefeicaoPorFora(
-                    converter(linha.valeRefeicao())
+                    linha.valeRefeicao()
             );
 
             registro.setGratificacaoPorFora(
-                    converter(linha.gratificacao())
+                    linha.gratificacao()
             );
 
             registro.setComissoesPorFora(
-                    converter(linha.comissoes())
+                    linha.comissoes()
             );
         }
 
         // 6. Conciliar BESTPONTOS
-        for (Map.Entry<String, Double> entrada :
+        for (Map.Entry<String, BigDecimal> entrada :
                 resultado.linhasBestPontos().entrySet()) {
 
             FuncionarioImportacao registro = obterOuCriarRegistro(
@@ -162,7 +162,7 @@ public class ConciliacaoPagamentoService {
             );
 
             registro.setValorBestPontos(
-                    converter(entrada.getValue())
+                    entrada.getValue()
             );
         }
 
@@ -261,10 +261,6 @@ public class ConciliacaoPagamentoService {
         }
 
         return chave;
-    }
-
-    private BigDecimal converter(Double valor) {
-        return valor == null ? null : BigDecimal.valueOf(valor);
     }
 
     private String normalizarNome(String nome) {

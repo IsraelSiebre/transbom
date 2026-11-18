@@ -2,6 +2,7 @@
 package com.insights.rh;
 
 import com.insights.rh.importacao.ConciliacaoPagamentoService;
+import com.insights.rh.importacao.dadosantigos.ImportacaoFolhaExcelService;
 import com.insights.rh.importacao.model.CentroDeCusto;
 import com.insights.rh.importacao.model.Funcionario;
 import com.insights.rh.importacao.model.FuncionarioImportacao;
@@ -13,6 +14,7 @@ import com.insights.rh.repository.FuncionarioRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +33,8 @@ public class Controller {
     private final ConciliacaoPagamentoService conciliacaoService;
     private final CalculoService calculoService;
     private final FuncionarioRepository funcionarioRepository;
+
+    private final ImportacaoFolhaExcelService importacaoFolhaExcelService;
 
     @GetMapping("/upload")
     public String index() {
@@ -176,5 +180,19 @@ public class Controller {
         return "rh/detalhamento";
     }
 
+    @PostMapping("/folha")
+    public ResponseEntity<Void> importar(
+            @RequestParam("arquivo") MultipartFile arquivo
+    ) throws IOException {
+        importacaoFolhaExcelService.importar(arquivo);
+
+        return null;
+    }
+
+    @GetMapping(value = "/folha", produces = MediaType.TEXT_HTML_VALUE)
+    public String paginaImportacao() {
+
+        return "rh/aaa";
+    }
 
 }
