@@ -133,7 +133,7 @@ public class ImportacaoFolhaExcelService {
                 funcionarioImportacao.setValorPorCodigo("SEG.ACIDENTE TRABALHO", toBigDecimal(row.getCell(96).getNumericCellValue()));
                 funcionarioImportacao.setValorPorCodigo("VALOR OUTRAS ENTIDADES", toBigDecimal(row.getCell(97).getNumericCellValue()));
 
-                Optional<Funcionario> funcionarioOptional = funcionarios.findByNome(row.getCell(4).getStringCellValue());
+                Optional<Funcionario> funcionarioOptional = funcionarios.findByNome(row.getCell(6).getStringCellValue());
 
                 Funcionario funcionario;
 
