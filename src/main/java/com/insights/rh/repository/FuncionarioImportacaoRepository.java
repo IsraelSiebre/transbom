@@ -1,6 +1,5 @@
 package com.insights.rh.repository;
 
-import com.insights.rh.importacao.model.Funcionario;
 import com.insights.rh.importacao.model.FuncionarioImportacao;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -14,9 +13,7 @@ public interface FuncionarioImportacaoRepository extends JpaRepository<Funcionar
 
     List<FuncionarioImportacao> findAllByCompetencia(LocalDate competencia);
 
-    Optional<FuncionarioImportacao> findByFuncionarioAndCompetencia(
-            Funcionario funcionario,
-            LocalDate competencia
-    );
+    Optional<FuncionarioImportacao> findByNomeAndCompetencia(String nome, LocalDate competencia);
+
 
 }

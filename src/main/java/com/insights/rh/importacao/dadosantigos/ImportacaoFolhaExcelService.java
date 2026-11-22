@@ -1,10 +1,9 @@
 package com.insights.rh.importacao.dadosantigos;
 
 import com.insights.rh.importacao.model.CentroDeCusto;
-import com.insights.rh.importacao.model.Funcionario;
 import com.insights.rh.importacao.model.FuncionarioImportacao;
 import com.insights.rh.repository.FuncionarioImportacaoRepository;
-import com.insights.rh.repository.FuncionarioRepository;
+import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,175 +11,291 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.text.Normalizer;
+import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.*;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class ImportacaoFolhaExcelService {
 
-    private final FuncionarioRepository funcionarios;
-    private final FuncionarioImportacaoRepository folhas;
-    private static final DataFormatter FORMATTER = new DataFormatter(new Locale("pt", "BR"));
+    private static final int TAMANHO_LOTE = 500;
+    private static final DateTimeFormatter DATA_BR = DateTimeFormatter.ofPattern("d/M/uuuu");
+    private static final DateTimeFormatter DATA_BR_HIFEN = DateTimeFormatter.ofPattern("d-M-uuuu");
 
-    public ImportacaoFolhaExcelService(FuncionarioRepository funcionarios,
-                                       FuncionarioImportacaoRepository folhas) {
-        this.funcionarios = funcionarios;
-        this.folhas = folhas;
-    }
+    private final FuncionarioImportacaoRepository repository;
+
+    // Índices zero-based da planilha antiga. Os textos abaixo são
+    // EXATAMENTE os códigos/aliases aceitos por setValorPorCodigo().
+    // Não estão aqui os campos que a entidade calcula via @PrePersist/@PreUpdate.
+    private static final Map<Integer, String> RUBRICAS_POR_COLUNA = Map.ofEntries(
+            Map.entry(11, "8781"),
+            Map.entry(12, "9380"),
+            Map.entry(13, "981"),
+            Map.entry(14, "995"),
+            Map.entry(15, "285"),
+            Map.entry(16, "LICENCA REMUNERADA"),
+            Map.entry(17, "873"),
+            Map.entry(18, "150"),
+            Map.entry(19, "HORASEXTRASNOTURNAS100"),
+            Map.entry(20, "200"),
+            Map.entry(21, "257"),
+            Map.entry(22, "226"),
+            Map.entry(23, "214"),
+            Map.entry(24, "255"),
+            Map.entry(25, "256"),
+            Map.entry(26, "16"),
+            Map.entry(27, "260"),
+            Map.entry(28, "3"),
+            Map.entry(29, "COMISSOESCOMPROVISAO"),
+            Map.entry(31, "CESTABASICA"),
+            Map.entry(33, "805"),
+            Map.entry(35, "VALETRANSPORTE"),
+            Map.entry(36, "VALEREFEICAO"),
+            Map.entry(38, "9591"),
+            Map.entry(39, "250"),
+            Map.entry(40, "854"),
+            Map.entry(41, "D.S.R. S/ ADICIONAL NOTURNO 20%"),
+            Map.entry(42, "D.S.R. S/ HORA EXTRA NOTURNA 50%"),
+            Map.entry(43, "262"),
+            Map.entry(44, "808"),
+            Map.entry(45, "932"),
+            Map.entry(46, "8800"),
+            Map.entry(47, "9180"),
+            Map.entry(48, "64"),
+            Map.entry(49, "R-FERIAS S/ AVISO PREVIO"),
+            Map.entry(50, "51"),
+            Map.entry(51, "29"),
+            Map.entry(52, "8552"),
+            Map.entry(53, "8550"),
+            Map.entry(54, "FGTS A RECOLHER"),
+            Map.entry(55, "8783"),
+            Map.entry(56, "931"),
+            Map.entry(57, "28"),
+            Map.entry(60, "258"),
+            Map.entry(61, "259"),
+            Map.entry(62, "277"),
+            Map.entry(63, "282"),
+            Map.entry(64, "271"),
+            Map.entry(65, "275"),
+            Map.entry(66, "205"),
+            Map.entry(67, "8069"),
+            Map.entry(68, "280"),
+            Map.entry(69, "265"),
+            Map.entry(70, "267"),
+            Map.entry(71, "242"),
+            Map.entry(72, "998"),
+            Map.entry(73, "812"),
+            Map.entry(74, "8785"),
+            Map.entry(75, "989"),
+            Map.entry(76, "96"),
+            Map.entry(77, "942"),
+            Map.entry(83, "900"),
+            Map.entry(84, "9162"),
+            Map.entry(85, "937"),
+            Map.entry(86, "225"),
+            Map.entry(87, "9181"),
+            Map.entry(88, "8169"),
+            Map.entry(89, "149"),
+            Map.entry(90, "261"),
+            Map.entry(91, "HORAEXTRANOTURNA100"),
+            Map.entry(92, "89"),
+            Map.entry(93, "9988"),
+            Map.entry(94, "9522"),
+            Map.entry(95, "146"),
+            Map.entry(96, "SEG.ACIDENTE TRABALHO"),
+            Map.entry(97, "VALOR OUTRAS ENTIDADES")
+    );
 
     @Transactional(rollbackFor = Exception.class)
     public void importar(MultipartFile arquivo) throws IOException {
-        int contador = 0;
+        if (arquivo == null || arquivo.isEmpty()) {
+            throw new IllegalArgumentException("Selecione uma planilha Excel não vazia.");
+        }
 
         try (Workbook workbook = WorkbookFactory.create(arquivo.getInputStream())) {
-            Sheet sheet = workbook.getSheetAt(0);
-            Row cabecalho = sheet.getRow(sheet.getFirstRowNum());
-
-            if (cabecalho == null) throw new IllegalArgumentException("Planilha sem cabeçalho");
-
-
-            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
-                Row row = sheet.getRow(i);
-                if(row == null) {break;}
-
-
-                FuncionarioImportacao funcionarioImportacao = new FuncionarioImportacao();
-                funcionarioImportacao.setCompetencia(LocalDate.of((int) row.getCell(2).getNumericCellValue(), (int) row.getCell(1).getNumericCellValue(), 1));
-                funcionarioImportacao.setValorPorCodigo("8781", toBigDecimal(row.getCell(11).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("9380", toBigDecimal(row.getCell(12).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("981", toBigDecimal(row.getCell(13).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("995", toBigDecimal(row.getCell(14).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("285", toBigDecimal(row.getCell(15).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("LICENCA REMUNERADA", toBigDecimal(row.getCell(16).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("873", toBigDecimal(row.getCell(17).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("150", toBigDecimal(row.getCell(18).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("264", toBigDecimal(row.getCell(19).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("200", toBigDecimal(row.getCell(20).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("257", toBigDecimal(row.getCell(21).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("226", toBigDecimal(row.getCell(22).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("214", toBigDecimal(row.getCell(23).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("255", toBigDecimal(row.getCell(24).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("256", toBigDecimal(row.getCell(25).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("16", toBigDecimal(row.getCell(26).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("260", toBigDecimal(row.getCell(27).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("3", toBigDecimal(row.getCell(28).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("Comissões COM Provisão", toBigDecimal(row.getCell(29).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("Comissões SEM Provisão", toBigDecimal(row.getCell(30).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("CESTA BÁSICA", toBigDecimal(row.getCell(31).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("Provisão de Férias", toBigDecimal(row.getCell(32).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("805", toBigDecimal(row.getCell(33).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("Provisão de 13º", toBigDecimal(row.getCell(34).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("Vale Transporte", toBigDecimal(row.getCell(35).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("Vale Refeição", toBigDecimal(row.getCell(36).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("Outros Encargos Sociais e Trab", toBigDecimal(row.getCell(37).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("9591", toBigDecimal(row.getCell(38).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("250", toBigDecimal(row.getCell(39).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("854", toBigDecimal(row.getCell(40).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("D.S.R. S/ ADICIONAL NOTURNO 20%", toBigDecimal(row.getCell(41).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("D.S.R. S/ HORA EXTRA NOTURNA 50%", toBigDecimal(row.getCell(42).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("262", toBigDecimal(row.getCell(43).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("808", toBigDecimal(row.getCell(44).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("932", toBigDecimal(row.getCell(45).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("8800", toBigDecimal(row.getCell(46).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("9180", toBigDecimal(row.getCell(47).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("64", toBigDecimal(row.getCell(48).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("R-FERIAS S/ AVISO PREVIO", toBigDecimal(row.getCell(49).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("51", toBigDecimal(row.getCell(50).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("29", toBigDecimal(row.getCell(51).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("8552", toBigDecimal(row.getCell(52).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("8550", toBigDecimal(row.getCell(53).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("FGTS A RECOLHER", toBigDecimal(row.getCell(54).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("8783", toBigDecimal(row.getCell(55).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("931", toBigDecimal(row.getCell(56).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("28", toBigDecimal(row.getCell(57).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("208", toBigDecimal(row.getCell(58).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("170", toBigDecimal(row.getCell(59).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("258", toBigDecimal(row.getCell(60).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("259", toBigDecimal(row.getCell(61).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("277", toBigDecimal(row.getCell(62).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("282", toBigDecimal(row.getCell(63).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("271", toBigDecimal(row.getCell(64).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("275", toBigDecimal(row.getCell(65).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("205", toBigDecimal(row.getCell(66).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("8069", toBigDecimal(row.getCell(67).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("280", toBigDecimal(row.getCell(68).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("265", toBigDecimal(row.getCell(69).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("267", toBigDecimal(row.getCell(70).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("242", toBigDecimal(row.getCell(71).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("998", toBigDecimal(row.getCell(72).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("812", toBigDecimal(row.getCell(73).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("8785", toBigDecimal(row.getCell(74).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("989", toBigDecimal(row.getCell(75).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("96", toBigDecimal(row.getCell(76).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("942", toBigDecimal(row.getCell(77).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("DESCONTOS TOTAIS", toBigDecimal(row.getCell(78).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("Custo M.O Total", toBigDecimal(row.getCell(79).getNumericCellValue()));
-
-                funcionarioImportacao.setValorPorCodigo("900", toBigDecimal(row.getCell(83).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("9162", toBigDecimal(row.getCell(84).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("937", toBigDecimal(row.getCell(85).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("225", toBigDecimal(row.getCell(86).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("9181", toBigDecimal(row.getCell(87).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("8169", toBigDecimal(row.getCell(88).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("149", toBigDecimal(row.getCell(89).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("261", toBigDecimal(row.getCell(90).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("264", toBigDecimal(row.getCell(91).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("89", toBigDecimal(row.getCell(92).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("9988", toBigDecimal(row.getCell(93).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("9522", toBigDecimal(row.getCell(94).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("146", toBigDecimal(row.getCell(95).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("SEG.ACIDENTE TRABALHO", toBigDecimal(row.getCell(96).getNumericCellValue()));
-                funcionarioImportacao.setValorPorCodigo("VALOR OUTRAS ENTIDADES", toBigDecimal(row.getCell(97).getNumericCellValue()));
-
-                Optional<Funcionario> funcionarioOptional = funcionarios.findByNome(row.getCell(6).getStringCellValue());
-
-                Funcionario funcionario;
-
-                if (!funcionarioOptional.isPresent()) {
-                    funcionario = new Funcionario();
-                    funcionario.setNome(row.getCell(6).getStringCellValue());
-                    funcionario.setCodigoExterno((int) row.getCell(4).getNumericCellValue());
-                    funcionario.setEmpresa(row.getCell(3).getStringCellValue());
-                    funcionario.setCargo(row.getCell(7).getStringCellValue());
-
-
-
-                    funcionario.setDataAdmissao(row.getCell(8).getLocalDateTimeCellValue().toLocalDate());
-
-                    funcionario.setCentroDeCusto(row.getCell(5).getStringCellValue());
-
-                    funcionarios.save(funcionario);
-                } else {
-                    funcionario = funcionarioOptional.get();
-                }
-                funcionarioImportacao.setFuncionario(funcionario);
-                folhas.save(funcionarioImportacao);
-                contador++;
-                System.out.println(contador +" - "+ funcionario.getCentroDeCusto());
+            Sheet planilha = workbook.getSheetAt(0);
+            int primeiraLinha = planilha.getFirstRowNum();
+            if (planilha.getRow(primeiraLinha) == null) {
+                throw new IllegalArgumentException("A planilha não possui cabeçalho.");
             }
 
+            FormulaEvaluator avaliador = workbook.getCreationHelper().createFormulaEvaluator();
+            DataFormatter formatador = new DataFormatter(Locale.forLanguageTag("pt-BR"));
+            List<FuncionarioImportacao> lote = new ArrayList<>(TAMANHO_LOTE);
+
+            for (int i = primeiraLinha + 1; i <= planilha.getLastRowNum(); i++) {
+                Row linha = planilha.getRow(i);
+                if (linha == null || linha.getPhysicalNumberOfCells() == 0) {
+                    continue;
+                }
+
+                try {
+                    String nome = lerTexto(linha, 6, formatador, avaliador);
+                    if (nome == null) {
+                        throw new IllegalArgumentException("Nome do funcionário vazio (coluna 7).");
+                    }
+
+                    FuncionarioImportacao funcionario = new FuncionarioImportacao();
+                    int mes = lerInteiroObrigatorio(linha, 1, avaliador);
+                    int ano = lerInteiroObrigatorio(linha, 2, avaliador);
+
+                    funcionario.setCompetencia(LocalDate.of(ano, mes, 1));
+                    funcionario.setCodigoExterno(lerInteiroObrigatorio(linha, 4, avaliador));
+                    funcionario.setNome(nome);
+                    funcionario.setCargo(lerTexto(linha, 7, formatador, avaliador));
+                    funcionario.setDataAdmissao(lerData(linha, 8, formatador, avaliador));
+
+                    String cc = lerTexto(linha, 5, formatador, avaliador);
+                    funcionario.setCentroDeCusto(cc == null
+                            ? null
+                            : CentroDeCusto.fromString(cc.toUpperCase(Locale.ROOT)));
+
+                    for (Map.Entry<Integer, String> rubrica : RUBRICAS_POR_COLUNA.entrySet()) {
+                        BigDecimal valor = lerDecimal(linha, rubrica.getKey(), avaliador);
+                        if (valor != null) {
+                            funcionario.setValorPorCodigo(rubrica.getValue(), valor);
+                        }
+                    }
+
+                    // A entidade sobrescreve comissoesSemProvisao no recalcular().
+                    // Por isso a coluna 30 deve preencher o campo de ORIGEM.
+                    BigDecimal comissoesSemProvisao = lerDecimal(linha, 30, avaliador);
+                    if (comissoesSemProvisao != null) {
+                        // Na planilha antiga existe apenas o valor consolidado.
+                        // Preenche ambas as origens para o cálculo funcionar também
+                        // se o centro de custo for atribuído posteriormente.
+                        funcionario.setComissoesPorFora(comissoesSemProvisao);
+                        funcionario.setValorBestPontos(comissoesSemProvisao);
+                    }
+
+                    // Colunas 32, 34, 37, 58, 59, 78 e 79 não são importadas:
+                    // provisões, encargos, adicionais de saúde e totais são calculados
+                    // pela entidade (recalcular) antes de persistir.
+                    // Colunas 80 a 82 não eram usadas no serviço antigo.
+
+                    lote.add(funcionario);
+                    if (lote.size() == TAMANHO_LOTE) {
+                        repository.saveAll(lote); // dispara @PrePersist e recalcular()
+                        lote.clear();
+                    }
+                } catch (RuntimeException e) {
+                    throw new IllegalArgumentException(
+                            "Erro na linha " + (i + 1) + " do Excel: " + e.getMessage(), e);
+                }
+            }
+
+            if (!lote.isEmpty()) {
+                repository.saveAll(lote);
+            }
         }
     }
 
-    private BigDecimal toBigDecimal(Double valor) {
-        return BigDecimal.valueOf(valor);
+    private static String lerTexto(Row linha, int coluna,
+                                   DataFormatter formatador, FormulaEvaluator avaliador) {
+        Cell celula = linha.getCell(coluna, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+        if (celula == null) return null;
+        String texto = formatador.formatCellValue(celula, avaliador).trim();
+        return texto.isEmpty() ? null : texto;
     }
 
-    private static String normalizar(String texto) {
-        if (texto == null) return "";
-        return Normalizer.normalize(texto, Normalizer.Form.NFD)
-                .replaceAll("\\p{M}+", "").toUpperCase(Locale.ROOT)
-                .replaceAll("[^A-Z0-9]+", " ").trim().replaceAll("\\s+", " ");
-    }
-
-
-    private String texto(Cell cell) {
-        DataFormatter formatter = new DataFormatter();
-        if (cell == null) {
-            return "";
+    private static int lerInteiroObrigatorio(Row linha, int coluna,
+                                             FormulaEvaluator avaliador) {
+        BigDecimal valor = lerDecimal(linha, coluna, avaliador);
+        if (valor == null) {
+            throw new IllegalArgumentException("Valor obrigatório ausente na coluna " + (coluna + 1));
         }
+        try {
+            return valor.intValueExact();
+        } catch (ArithmeticException e) {
+            throw new IllegalArgumentException("Valor inteiro inválido na coluna " + (coluna + 1), e);
+        }
+    }
 
-        return formatter.formatCellValue(cell).trim();
+    private static BigDecimal lerDecimal(Row linha, int coluna, FormulaEvaluator avaliador) {
+        Cell celula = linha.getCell(coluna, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+        if (celula == null) return null;
+
+        CellType tipo = celula.getCellType();
+        if (tipo == CellType.FORMULA) {
+            CellValue resultado = avaliador.evaluate(celula);
+            if (resultado == null) return null;
+            return switch (resultado.getCellType()) {
+                case NUMERIC -> moeda(resultado.getNumberValue());
+                case STRING -> converterNumero(resultado.getStringValue());
+                case BLANK -> null;
+                default -> throw new IllegalArgumentException(
+                        "Fórmula inválida na coluna " + (coluna + 1));
+            };
+        }
+        return switch (tipo) {
+            case NUMERIC -> moeda(celula.getNumericCellValue());
+            case STRING -> converterNumero(celula.getStringCellValue());
+            case BLANK -> null;
+            default -> throw new IllegalArgumentException(
+                    "Valor numérico inválido na coluna " + (coluna + 1));
+        };
+    }
+
+    private static BigDecimal moeda(double valor) {
+        return BigDecimal.valueOf(valor).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private static BigDecimal converterNumero(String texto) {
+        if (texto == null || texto.isBlank() || texto.trim().equals("-")) return null;
+        String numero = texto.replace("R$", "").replace("\u00A0", "").replaceAll("\\s", "").trim();
+        boolean negativo = numero.startsWith("(") && numero.endsWith(")");
+        if (negativo) numero = numero.substring(1, numero.length() - 1);
+        if (numero.contains(",") && numero.contains(".")) {
+            numero = numero.lastIndexOf(',') > numero.lastIndexOf('.')
+                    ? numero.replace(".", "").replace(',', '.')
+                    : numero.replace(",", "");
+        } else if (numero.contains(",")) {
+            numero = numero.replace(',', '.');
+        } else if (numero.matches("-?\\d{1,3}(\\.\\d{3})+")) {
+            numero = numero.replace(".", "");
+        }
+        try {
+            BigDecimal valor = new BigDecimal(numero).setScale(2, RoundingMode.HALF_UP);
+            return negativo ? valor.negate() : valor;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Número inválido: " + texto, e);
+        }
+    }
+
+    private static LocalDate lerData(Row linha, int coluna,
+                                     DataFormatter formatador, FormulaEvaluator avaliador) {
+        Cell celula = linha.getCell(coluna, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+        if (celula == null) return null;
+        if (celula.getCellType() == CellType.NUMERIC) {
+            return DateUtil.getLocalDateTime(celula.getNumericCellValue()).toLocalDate();
+        }
+        if (celula.getCellType() == CellType.FORMULA) {
+            CellValue resultado = avaliador.evaluate(celula);
+            if (resultado != null && resultado.getCellType() == CellType.NUMERIC) {
+                return DateUtil.getLocalDateTime(resultado.getNumberValue()).toLocalDate();
+            }
+        }
+        String texto = lerTexto(linha, coluna, formatador, avaliador);
+        if (texto == null) return null;
+        try {
+            return LocalDate.parse(texto, DATA_BR);
+        } catch (DateTimeParseException e) {
+            try {
+                return LocalDate.parse(texto, DATA_BR_HIFEN);
+            } catch (DateTimeParseException ex) {
+                try {
+                    return LocalDate.parse(texto);
+                } catch (DateTimeParseException ex2) {
+                    throw new IllegalArgumentException("Data inválida na coluna "
+                            + (coluna + 1) + ": " + texto, ex2);
+                }
+            }
+        }
     }
 }

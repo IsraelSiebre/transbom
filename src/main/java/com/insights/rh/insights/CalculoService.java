@@ -9,9 +9,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -21,339 +23,112 @@ public class CalculoService {
 
     private final FuncionarioImportacaoRepository repository;
 
+    // Apenas consulta dados já calculados na entidade e os transforma em records.
     public List<FuncionarioCalculo> calcularListaMOFuncionarios(LocalDate competencia) {
-        competencia = LocalDate.of(competencia.getYear(), competencia.getMonth(), 1);
-        List<FuncionarioImportacao> funcionariosImportacao = repository.findAllByCompetencia(competencia);
-        List<FuncionarioCalculo> listaCalculos = new ArrayList<>();
+        Objects.requireNonNull(competencia, "A competência é obrigatória.");
+        LocalDate mes = competencia.withDayOfMonth(1);
 
-        for (FuncionarioImportacao funcionarioImportacao : funcionariosImportacao) {
-            String nome =  funcionarioImportacao.getFuncionario().getNome();
-            String cargo =  funcionarioImportacao.getFuncionario().getCargo();
-            CentroDeCusto centroDeCusto = funcionarioImportacao.getFuncionario().getCentroDeCusto();
-            LocalDate dataAdmissao = funcionarioImportacao.getFuncionario().getDataAdmissao();
-
-            BigDecimal salario = funcionarioImportacao.getValorPorCodigo("8781");
-            BigDecimal proLabore =  funcionarioImportacao.getValorPorCodigo("9380");
-            BigDecimal adiantamentoDeSalario = funcionarioImportacao.getValorPorCodigo("981");
-            BigDecimal salarioFamilia = funcionarioImportacao.getValorPorCodigo("995");
-            BigDecimal horasExtras50Banco = funcionarioImportacao.getValorPorCodigo("285");
-            BigDecimal licencaRemunerada = funcionarioImportacao.getValorPorCodigo("LICENCA REMUNERADA");
-            BigDecimal plr = funcionarioImportacao.getValorPorCodigo("873");
-            BigDecimal horasExtras50 = funcionarioImportacao.getValorPorCodigo("150");
-            BigDecimal horasExtras100 = funcionarioImportacao.getValorPorCodigo("200");
-            BigDecimal horasExtrasNoturnas100 = funcionarioImportacao.getValorPorCodigo("264");
-            BigDecimal horaExtraNoturna50 = funcionarioImportacao.getValorPorCodigo("257");
-            BigDecimal adicionalJornadaNoturno20 = funcionarioImportacao.getValorPorCodigo("226");
-            BigDecimal adicionalNoturno20 = funcionarioImportacao.getValorPorCodigo("214");
-            BigDecimal diariasDeViagens = funcionarioImportacao.getValorPorCodigo("255");
-            BigDecimal pernoite = funcionarioImportacao.getValorPorCodigo("256");
-            BigDecimal insalubridadeSalario = funcionarioImportacao.getValorPorCodigo("16");
-            BigDecimal dsrGeral = funcionarioImportacao.getValorPorCodigo("3");
-            BigDecimal adicionalRodotren = funcionarioImportacao.getValorPorCodigo("260");
-
-            BigDecimal comissoesComProvisao = funcionarioImportacao.getGratificacaoPorFora();
-            BigDecimal comissoesSemProvisao = CentroDeCusto.TRANSF.equals(funcionarioImportacao.getFuncionario().getCentroDeCusto()) ? funcionarioImportacao.getValorBestPontos() : funcionarioImportacao.getComissoesPorFora();
-            BigDecimal cestaBasica = BigDecimal.valueOf(180);
-            BigDecimal provisaoDeFerias = init(salario)
-                    .add(init(plr))
-                    .add(init(horasExtras50))
-                    .add(init(horasExtrasNoturnas100))
-                    .add(init(horasExtras100))
-                    .add(init(horaExtraNoturna50))
-                    .add(init(adicionalNoturno20))
-                    .add(init(insalubridadeSalario))
-                    .divide(BigDecimal.valueOf(36), 2, RoundingMode.HALF_UP);
-
-            BigDecimal difMediasFerias = funcionarioImportacao.getValorPorCodigo("805");
-            BigDecimal provisao13Salario = init(salario)
-                    .add(init(plr))
-                    .add(init(horasExtras50))
-                    .add(init(horasExtrasNoturnas100))
-                    .add(init(horasExtras100))
-                    .add(init(horaExtraNoturna50))
-                    .add(init(adicionalNoturno20))
-                    .add(init(insalubridadeSalario))
-                    .divide(BigDecimal.valueOf(12), 2, RoundingMode.HALF_UP);
-
-            BigDecimal valeTransporte = funcionarioImportacao.getValeTransportePorFora();
-            BigDecimal valeRefeicao = funcionarioImportacao.getValeRefeicaoPorFora();
-
-            BigDecimal rAvisoPrevioIndenizado = funcionarioImportacao.getValorPorCodigo("9591");
-            BigDecimal reflexoExtrasDsr = funcionarioImportacao.getValorPorCodigo("250");
-            BigDecimal dsrVariavelSAdicJornadaNoturno20 = funcionarioImportacao.getValorPorCodigo("854");
-            BigDecimal dsrSAdicionalNoturno20 = funcionarioImportacao.getValorPorCodigo("D.S.R. S/ ADICIONAL NOTURNO 20%");
-            BigDecimal dsrSHoraExtraNoturna50 = funcionarioImportacao.getValorPorCodigo("D.S.R. S/ HORA EXTRA NOTURNA 50%");
-            BigDecimal dsrSHorasExtras100 = funcionarioImportacao.getValorPorCodigo("262");
-            BigDecimal abonoPecuniario = funcionarioImportacao.getValorPorCodigo("808");
-            BigDecimal umTercoSAbonoPecuniario = funcionarioImportacao.getValorPorCodigo("932");
-            BigDecimal diasAbonoPecuniarioFerias = funcionarioImportacao.getValorPorCodigo("8800");
-            BigDecimal rSaldoDeSalario = funcionarioImportacao.getValorPorCodigo("9180");
-            BigDecimal rAdicionalDeFerias = funcionarioImportacao.getValorPorCodigo("64");
-            BigDecimal rFeriasSAvisoPrevio = funcionarioImportacao.getValorPorCodigo("R-FERIAS S/ AVISO PREVIO");
-            BigDecimal valorLiquidoDaRescisao = funcionarioImportacao.getValorPorCodigo("51");
-            BigDecimal feriasProporcionais = funcionarioImportacao.getValorPorCodigo("29");
-            BigDecimal r13SalarioNaRct = funcionarioImportacao.getValorPorCodigo("8552");
-            BigDecimal trezeSalarioIntegralRescisao = funcionarioImportacao.getValorPorCodigo("8550");
-            BigDecimal fgts = funcionarioImportacao.getValorPorCodigo("FGTS A RECOLHER");
-            BigDecimal feriasNormaisMes = funcionarioImportacao.getValorPorCodigo("8783");
-            BigDecimal umTercoAdicionalDeFerias = funcionarioImportacao.getValorPorCodigo("931");
-            BigDecimal adicionalDeFerias = funcionarioImportacao.getValorPorCodigo("28");
-            BigDecimal santaCasaSaudeDesc = funcionarioImportacao.getValorPorCodigo("258");
-            BigDecimal convenioOdontologicoDesc = funcionarioImportacao.getValorPorCodigo("259");
-            BigDecimal convenioOdontologicoAdic = init(convenioOdontologicoDesc).compareTo(BigDecimal.ZERO) > 0
-                    ? BigDecimal.valueOf(17.28)
-                    : BigDecimal.ZERO;
-            BigDecimal convenioSaude = funcionarioImportacao.getValorPorCodigo("282");
-            BigDecimal santaCasaSaudeAdic = convenioSaude;
-            BigDecimal convenioAnaCostaSaude = funcionarioImportacao.getValorPorCodigo("277");
-            BigDecimal valeDiversos = funcionarioImportacao.getValorPorCodigo("271");
-            BigDecimal pensaoAlimenticia25SalLiq = funcionarioImportacao.getValorPorCodigo("275");
-            BigDecimal descontoEmprestimo = funcionarioImportacao.getValorPorCodigo("205");
-            BigDecimal faltasInjustEmHoras = funcionarioImportacao.getValorPorCodigo("8069");
-            BigDecimal convenioSaudeCoopart = funcionarioImportacao.getValorPorCodigo("280");
-            BigDecimal convenioDeFarmacia = funcionarioImportacao.getValorPorCodigo("265");
-            BigDecimal convenioSeguros = funcionarioImportacao.getValorPorCodigo("267");
-            BigDecimal multasDeTransito = funcionarioImportacao.getValorPorCodigo("242");
-            BigDecimal inss = funcionarioImportacao.getValorPorCodigo("998");
-            BigDecimal inssDeFerias = funcionarioImportacao.getValorPorCodigo("812");
-            BigDecimal diasAfastInssPDoenca = funcionarioImportacao.getValorPorCodigo("8785");
-            BigDecimal inssRescisao = funcionarioImportacao.getValorPorCodigo("989");
-            BigDecimal irrf = funcionarioImportacao.getValorPorCodigo("96");
-            BigDecimal irrfDeFerias = funcionarioImportacao.getValorPorCodigo("942");
-            BigDecimal pensaoAlimenticia25Sal = funcionarioImportacao.getValorPorCodigo("900");
-            BigDecimal feriasNormaisMesRef = funcionarioImportacao.getValorPorCodigo("9162");
-            BigDecimal descAdtoFeriasMes = funcionarioImportacao.getValorPorCodigo("937");
-            BigDecimal adiantamentoDeDiariasDeViagem = funcionarioImportacao.getValorPorCodigo("225");
-            BigDecimal inssDeFeriasRef = funcionarioImportacao.getValorPorCodigo("9181");
-            BigDecimal umTercoAdicionalDeFeriasRef = funcionarioImportacao.getValorPorCodigo("8169");
-            BigDecimal adicionalPericulosidade = funcionarioImportacao.getValorPorCodigo("149");
-            BigDecimal horasNormaisSalario = funcionarioImportacao.getValorPorCodigo("261");
-            BigDecimal horaExtraNoturna100 = funcionarioImportacao.getValorPorCodigo("264");
-            BigDecimal penhora = funcionarioImportacao.getValorPorCodigo("89");
-            BigDecimal faltasInjustDsrEmHoras = funcionarioImportacao.getValorPorCodigo("9988");
-            BigDecimal afastamentoDoencasDiasSempre = funcionarioImportacao.getValorPorCodigo("9522");
-            BigDecimal reembolso = funcionarioImportacao.getValorPorCodigo("146");
-            BigDecimal segAcidenteTrabalho = funcionarioImportacao.getValorPorCodigo("SEG.ACIDENTE TRABALHO");
-            BigDecimal valorOutrasEntidades = funcionarioImportacao.getValorPorCodigo("VALOR OUTRAS ENTIDADES");
-
-            BigDecimal outrosEncargosSociaisTrab = init(salario)
-                    .add(init(proLabore))
-                    .add(init(adiantamentoDeSalario))
-                    .add(init(salarioFamilia))
-                    .add(init(horasExtras50Banco))
-                    .add(init(licencaRemunerada))
-                    .add(init(horasExtras50))
-                    .add(init(horasExtrasNoturnas100))
-                    .add(init(horasExtras100))
-                    .add(init(horaExtraNoturna50))
-                    .add(init(adicionalJornadaNoturno20))
-                    .add(init(adicionalNoturno20))
-                    .add(init(insalubridadeSalario))
-                    .add(init(provisaoDeFerias))
-                    .add(init(reflexoExtrasDsr))
-                    .add(init(dsrVariavelSAdicJornadaNoturno20))
-                    .add(init(dsrSAdicionalNoturno20))
-                    .add(init(dsrSHoraExtraNoturna50))
-                    .add(init(dsrSHorasExtras100))
-                    .add(init(abonoPecuniario))
-                    .add(init(umTercoSAbonoPecuniario))
-                    .add(init(diasAbonoPecuniarioFerias))
-                    .add(init(rSaldoDeSalario))
-                    .add(init(rAdicionalDeFerias))
-                    .add(init(rFeriasSAvisoPrevio))
-                    .add(init(valorLiquidoDaRescisao))
-                    .add(init(feriasProporcionais))
-                    .add(init(r13SalarioNaRct))
-                    .add(init(trezeSalarioIntegralRescisao))
-                    .subtract(init(descontoEmprestimo))
-                    .subtract(init(faltasInjustEmHoras))
-                    .add(init(BigDecimal.valueOf(funcionarioImportacao.getCompetencia().getYear())))
-                    .multiply(new BigDecimal("0.073"))
-                    .setScale(2, RoundingMode.HALF_UP);
-
-            BigDecimal descontosTotais = init(feriasNormaisMes)
-                    .add(init(umTercoAdicionalDeFerias))
-                    .add(init(adicionalDeFerias))
-                    .add(init(santaCasaSaudeDesc))
-                    .add(init(convenioOdontologicoDesc))
-                    .add(init(convenioAnaCostaSaude))
-                    .add(init(convenioSaude))
-                    .add(init(valeDiversos))
-                    .add(init(pensaoAlimenticia25SalLiq))
-                    .add(init(descontoEmprestimo))
-                    .add(init(faltasInjustEmHoras))
-                    .add(init(convenioSaudeCoopart))
-                    .add(init(convenioDeFarmacia))
-                    .add(init(convenioSeguros))
-                    .add(init(multasDeTransito))
-                    .add(init(inss))
-                    .add(init(inssDeFerias))
-                    .add(init(diasAfastInssPDoenca))
-                    .add(init(inssRescisao))
-                    .add(init(irrf))
-                    .add(init(irrfDeFerias))
-                    .add(init(pensaoAlimenticia25Sal))
-                    .add(init(inssDeFeriasRef))
-                    .add(init(penhora))
-                    .add(init(faltasInjustDsrEmHoras));
-
-            BigDecimal custoMoTotal = init(salario)
-                    .add(init(proLabore))
-                    .add(init(adiantamentoDeSalario))
-                    .add(init(salarioFamilia))
-                    .add(init(horasExtras50Banco))
-                    .add(init(licencaRemunerada))
-                    .add(init(plr))
-                    .add(init(horasExtras50))
-                    .add(init(horasExtrasNoturnas100))
-                    .add(init(horasExtras100))
-                    .add(init(horaExtraNoturna50))
-                    .add(init(adicionalJornadaNoturno20))
-                    .add(init(adicionalNoturno20))
-                    .add(init(diariasDeViagens))
-                    .add(init(pernoite))
-                    .add(init(insalubridadeSalario))
-                    .add(init(dsrGeral))
-                    .add(init(adicionalRodotren))
-                    .add(init(comissoesComProvisao))
-                    .add(init(comissoesSemProvisao))
-                    .add(init(cestaBasica))
-                    .add(init(provisaoDeFerias))
-                    .add(init(difMediasFerias))
-                    .add(init(provisao13Salario))
-                    .add(init(valeTransporte))
-                    .add(init(valeRefeicao))
-                    .add(init(outrosEncargosSociaisTrab))
-                    .add(init(rAvisoPrevioIndenizado))
-                    .add(init(reflexoExtrasDsr))
-                    .add(init(dsrVariavelSAdicJornadaNoturno20))
-                    .add(init(dsrSAdicionalNoturno20))
-                    .add(init(dsrSHoraExtraNoturna50))
-                    .add(init(dsrSHorasExtras100))
-                    .add(init(abonoPecuniario))
-                    .add(init(umTercoSAbonoPecuniario))
-                    .add(init(diasAbonoPecuniarioFerias))
-                    .add(init(rSaldoDeSalario))
-                    .add(init(rAdicionalDeFerias))
-                    .add(init(rFeriasSAvisoPrevio))
-                    .add(init(valorLiquidoDaRescisao))
-                    .add(init(feriasProporcionais))
-                    .add(init(r13SalarioNaRct))
-                    .add(init(trezeSalarioIntegralRescisao))
-                    .add(init(fgts))
-                    .add(init(santaCasaSaudeAdic))
-                    .add(init(convenioOdontologicoAdic))
-                    .add(init(feriasNormaisMesRef))
-                    .add(init(descAdtoFeriasMes))
-                    .add(init(adiantamentoDeDiariasDeViagem))
-                    .add(init(umTercoAdicionalDeFeriasRef))
-                    .add(init(adicionalPericulosidade))
-                    .add(init(horasNormaisSalario))
-                    .add(init(horaExtraNoturna100))
-                    .add(init(afastamentoDoencasDiasSempre))
-                    .add(init(reembolso))
-                    .add(init(segAcidenteTrabalho))
-                    .add(init(valorOutrasEntidades));
-
-            FuncionarioCalculo funcionarioCalculo = new FuncionarioCalculo(
-                    nome,
-                    cargo,
-                    centroDeCusto,
-                    dataAdmissao,
-                    salario,
-                    proLabore,
-                    adiantamentoDeSalario,
-                    salarioFamilia,
-                    horasExtras50Banco,
-                    licencaRemunerada,
-                    plr,
-                    horasExtras50,
-                    horasExtrasNoturnas100,
-                    horasExtras100,
-                    horaExtraNoturna50,
-                    adicionalJornadaNoturno20,
-                    adicionalNoturno20,
-                    diariasDeViagens,
-                    pernoite,
-                    insalubridadeSalario,
-                    dsrGeral,
-                    adicionalRodotren,
-                    comissoesComProvisao,
-                    comissoesSemProvisao,
-                    cestaBasica,
-                    provisaoDeFerias,
-                    difMediasFerias,
-                    provisao13Salario,
-                    valeTransporte,
-                    valeRefeicao,
-                    outrosEncargosSociaisTrab,
-                    rAvisoPrevioIndenizado,
-                    reflexoExtrasDsr,
-                    dsrVariavelSAdicJornadaNoturno20,
-                    dsrSAdicionalNoturno20,
-                    dsrSHoraExtraNoturna50,
-                    dsrSHorasExtras100,
-                    abonoPecuniario,
-                    umTercoSAbonoPecuniario,
-                    diasAbonoPecuniarioFerias,
-                    rSaldoDeSalario,
-                    rAdicionalDeFerias,
-                    rFeriasSAvisoPrevio,
-                    valorLiquidoDaRescisao,
-                    feriasProporcionais,
-                    r13SalarioNaRct,
-                    trezeSalarioIntegralRescisao,
-                    fgts,
-                    feriasNormaisMes,
-                    umTercoAdicionalDeFerias,
-                    adicionalDeFerias,
-                    santaCasaSaudeAdic,
-                    convenioOdontologicoAdic,
-                    santaCasaSaudeDesc,
-                    convenioOdontologicoDesc,
-                    convenioAnaCostaSaude,
-                    convenioSaude,
-                    valeDiversos,
-                    pensaoAlimenticia25SalLiq,
-                    descontoEmprestimo,
-                    faltasInjustEmHoras,
-                    convenioSaudeCoopart,
-                    convenioDeFarmacia,
-                    convenioSeguros,
-                    multasDeTransito,
-                    inss,
-                    inssDeFerias,
-                    diasAfastInssPDoenca,
-                    inssRescisao,
-                    irrf,
-                    irrfDeFerias,
-                    descontosTotais,
-                    custoMoTotal,
-                    pensaoAlimenticia25Sal,
-                    feriasNormaisMesRef,
-                    descAdtoFeriasMes,
-                    adiantamentoDeDiariasDeViagem,
-                    inssDeFeriasRef,
-                    umTercoAdicionalDeFeriasRef,
-                    adicionalPericulosidade,
-                    horasNormaisSalario,
-                    horaExtraNoturna100,
-                    penhora,
-                    faltasInjustDsrEmHoras,
-                    afastamentoDoencasDiasSempre,
-                    reembolso,
-                    segAcidenteTrabalho,
-                    valorOutrasEntidades
-
-            );
-
-            listaCalculos.add(funcionarioCalculo);
-        }
-
-        return listaCalculos;
+        return repository.findAllByCompetencia(mes).stream()
+                .map(this::converterParaRecord)
+                .toList();
     }
 
+    public FuncionarioCalculo converterParaRecord(FuncionarioImportacao f) {
+        Objects.requireNonNull(f, "O funcionario importado não pode ser nulo.");
 
+        return new FuncionarioCalculo(
+                f.getNome(),
+                f.getCargo(),
+                f.getCentroDeCusto(),
+                f.getDataAdmissao(),
+                valorOuZero(f.getSalario()),
+                valorOuZero(f.getProLabore()),
+                valorOuZero(f.getAdiantamentoDeSalario()),
+                valorOuZero(f.getSalarioFamilia()),
+                valorOuZero(f.getHorasExtras50Banco()),
+                valorOuZero(f.getLicencaRemunerada()),
+                valorOuZero(f.getPlr()),
+                valorOuZero(f.getHorasExtras50()),
+                valorOuZero(f.getHorasExtrasNoturnas100()),
+                valorOuZero(f.getHorasExtras100()),
+                valorOuZero(f.getHoraExtraNoturna50()),
+                valorOuZero(f.getAdicionalJornadaNoturno20()),
+                valorOuZero(f.getAdicionalNoturno20()),
+                valorOuZero(f.getDiariasDeViagens()),
+                valorOuZero(f.getPernoite()),
+                valorOuZero(f.getInsalubridadeSalario()),
+                valorOuZero(f.getDsrGeral()),
+                valorOuZero(f.getAdicionalRodotren()),
+                valorOuZero(f.getComissoesComProvisao()),
+                valorOuZero(f.getComissoesSemProvisao()),
+                valorOuZero(f.getCestaBasica()),
+                valorOuZero(f.getProvisaoDeFerias()),
+                valorOuZero(f.getDifMediasFerias()),
+                valorOuZero(f.getProvisao13Salario()),
+                valorOuZero(f.getValeTransporte()),
+                valorOuZero(f.getValeRefeicao()),
+                valorOuZero(f.getOutrosEncargosSociaisTrab()),
+                valorOuZero(f.getRAvisoPrevioIndenizado()),
+                valorOuZero(f.getReflexoExtrasDsr()),
+                valorOuZero(f.getDsrVariavelSAdicJornadaNoturno20()),
+                valorOuZero(f.getDsrSAdicionalNoturno20()),
+                valorOuZero(f.getDsrSHoraExtraNoturna50()),
+                valorOuZero(f.getDsrSHorasExtras100()),
+                valorOuZero(f.getAbonoPecuniario()),
+                valorOuZero(f.getUmTercoSAbonoPecuniario()),
+                valorOuZero(f.getDiasAbonoPecuniarioFerias()),
+                valorOuZero(f.getRSaldoDeSalario()),
+                valorOuZero(f.getRAdicionalDeFerias()),
+                valorOuZero(f.getRFeriasSAvisoPrevio()),
+                valorOuZero(f.getValorLiquidoDaRescisao()),
+                valorOuZero(f.getFeriasProporcionais()),
+                valorOuZero(f.getR13SalarioNaRct()),
+                valorOuZero(f.getTrezeSalarioIntegralRescisao()),
+                valorOuZero(f.getFgts()),
+                valorOuZero(f.getFeriasNormaisMes()),
+                valorOuZero(f.getUmTercoAdicionalDeFerias()),
+                valorOuZero(f.getAdicionalDeFerias()),
+                valorOuZero(f.getSantaCasaSaudeAdic()),
+                valorOuZero(f.getConvenioOdontologicoAdic()),
+                valorOuZero(f.getSantaCasaSaudeDesc()),
+                valorOuZero(f.getConvenioOdontologicoDesc()),
+                valorOuZero(f.getConvenioAnaCostaSaude()),
+                valorOuZero(f.getConvenioSaude()),
+                valorOuZero(f.getValeDiversos()),
+                valorOuZero(f.getPensaoAlimenticia25SalLiq()),
+                valorOuZero(f.getDescontoEmprestimo()),
+                valorOuZero(f.getFaltasInjustEmHoras()),
+                valorOuZero(f.getConvenioSaudeCoopart()),
+                valorOuZero(f.getConvenioDeFarmacia()),
+                valorOuZero(f.getConvenioSeguros()),
+                valorOuZero(f.getMultasDeTransito()),
+                valorOuZero(f.getInss()),
+                valorOuZero(f.getInssDeFerias()),
+                valorOuZero(f.getDiasAfastInssPDoenca()),
+                valorOuZero(f.getInssRescisao()),
+                valorOuZero(f.getIrrf()),
+                valorOuZero(f.getIrrfDeFerias()),
+                valorOuZero(f.getDescontosTotais()),
+                valorOuZero(f.getCustoMoTotal()),
+                valorOuZero(f.getPensaoAlimenticia25Sal()),
+                valorOuZero(f.getFeriasNormaisMesRef()),
+                valorOuZero(f.getDescAdtoFeriasMes()),
+                valorOuZero(f.getAdiantamentoDeDiariasDeViagem()),
+                valorOuZero(f.getInssDeFeriasRef()),
+                valorOuZero(f.getUmTercoAdicionalDeFeriasRef()),
+                valorOuZero(f.getAdicionalPericulosidade()),
+                valorOuZero(f.getHorasNormaisSalario()),
+                valorOuZero(f.getHoraExtraNoturna100()),
+                valorOuZero(f.getPenhora()),
+                valorOuZero(f.getFaltasInjustDsrEmHoras()),
+                valorOuZero(f.getAfastamentoDoencasDiasSempre()),
+                valorOuZero(f.getReembolso()),
+                valorOuZero(f.getSegAcidenteTrabalho()),
+                valorOuZero(f.getValorOutrasEntidades())
+        );
+    }
+
+    // Soma cada rubrica dos records; nenhuma regra de cálculo individual aqui.
     public CalculoTotal calcularTotal(List<FuncionarioCalculo> listaCalculos) {
         return new CalculoTotal(
                 somar(listaCalculos, FuncionarioCalculo::salario),
@@ -444,33 +219,26 @@ public class CalculoService {
     }
 
     public Map<CentroDeCusto, CalculoTotal> calcularTotalPorCentroDeCusto(
-            List<FuncionarioCalculo> calculos
-    ) {
+            List<FuncionarioCalculo> calculos) {
         return calculos.stream()
                 .filter(f -> f.centroDeCusto() != null)
                 .collect(Collectors.groupingBy(
                         FuncionarioCalculo::centroDeCusto,
                         () -> new EnumMap<>(CentroDeCusto.class),
-                        Collectors.collectingAndThen(
-                                Collectors.toList(),
-                                this::calcularTotal
-                        )
+                        Collectors.collectingAndThen(Collectors.toList(), this::calcularTotal)
                 ));
     }
 
-
     private BigDecimal somar(
             List<FuncionarioCalculo> lista,
-            Function<FuncionarioCalculo, BigDecimal> campo
-    ) {
+            Function<FuncionarioCalculo, BigDecimal> campo) {
         return lista.stream()
                 .map(campo)
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    private BigDecimal init(BigDecimal valor) {
+    private BigDecimal valorOuZero(BigDecimal valor) {
         return valor == null ? BigDecimal.ZERO : valor;
     }
-
 }

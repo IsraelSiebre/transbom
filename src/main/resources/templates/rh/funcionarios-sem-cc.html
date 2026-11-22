@@ -555,6 +555,8 @@
           class="card"
           th:unless="${#lists.isEmpty(funcionariosSemCC)}">
 
+        <input type="hidden" name="competencia" th:value="${competencia}">
+
         <!-- Proteção CSRF, caso utilize Spring Security -->
         <input type="hidden"
                th:if="${_csrf != null}"

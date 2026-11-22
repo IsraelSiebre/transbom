@@ -1,8 +1,8 @@
 package com.insights.rh.importacao;
 
-import com.insights.rh.importacao.model.Funcionario;
+import com.insights.rh.importacao.model.CentroDeCusto;
 import com.insights.rh.importacao.model.FuncionarioImportacao;
-import com.insights.rh.repository.FuncionarioRepository;
+import com.insights.rh.repository.FuncionarioImportacaoRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -20,16 +20,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class ImportacaoFolhaService {
 
-    private final FuncionarioRepository funcionarioRepository;
     private static final Logger log = LoggerFactory.getLogger(ImportacaoFolhaService.class);
     private static final BigDecimal ALIQUOTA_RAT = new BigDecimal("0.0388");
     private static final BigDecimal ALIQUOTA_TERCEIROS = new BigDecimal("0.058");
+    private final FuncionarioImportacaoRepository funcionarioImportacaoRepository;
+
 
     public List<FuncionarioImportacao> processar(MultipartFile arquivo) throws IOException {
         if (arquivo == null || arquivo.isEmpty()) {
@@ -61,24 +63,13 @@ public class ImportacaoFolhaService {
             FuncionarioImportacao funcionario = new FuncionarioImportacao();
             Map<String, Object> primeiraLinha = grupo.get(0);
 
-            Optional<Funcionario> funcionarioExistente = funcionarioRepository.findByCpf(texto(primeiraLinha.get("cp_cpf")));
-
-            if (funcionarioExistente.isPresent()) {
-                funcionario.setFuncionario(funcionarioExistente.get());
-
-            } else {
-                Funcionario novo = new Funcionario();
-                novo.setNome(texto(primeiraLinha.get("cp_nome_epr")));
-                novo.setEmpresa(texto(primeiraLinha.get("nome_emp")));
-                novo.setCargo(texto(primeiraLinha.get("cp_nome_car")));
-                novo.setDataAdmissao(texto(primeiraLinha.get("cp_admissao")));
-                novo.setCpf(texto(primeiraLinha.get("cp_cpf")));
-                funcionarioRepository.save(novo);
-
-                funcionario.setFuncionario(novo);
-            }
-
-            funcionario.setCompetencia(texto(primeiraLinha.get("cp_competencia")));
+            funcionario.setNome(texto(primeiraLinha.get("cp_nome_epr")));
+            funcionario.setCargo(texto(primeiraLinha.get("cp_nome_car")));
+            funcionario.setDataAdmissao(formatarData(texto(primeiraLinha.get("cp_admissao"))));
+            funcionario.setCpf(texto(primeiraLinha.get("cp_cpf")));
+            funcionario.setCompetencia(formatarData(texto(primeiraLinha.get("cp_competencia"))));
+            funcionario.setCodigoExterno(((Number) primeiraLinha.get("cp_codi_epr")).intValue());
+            funcionario.setCentroDeCusto(buscarCentroDeCusto(funcionario.getNome(), funcionario.getCodigoExterno(), funcionario.getCompetencia()));
 
             Set<String> eventosProcessados = new HashSet<>();
             for (Map<String, Object> linha : grupo) {
@@ -95,16 +86,16 @@ public class ImportacaoFolhaService {
             BigDecimal vencimentos = primeiroValor(grupo, "cp_tot_prov");
             BigDecimal descontos = primeiroValor(grupo, "cp_tot_desc");
 
-            funcionario.setBaseInss(baseInss);
-            funcionario.setBaseIrrf(baseIrrf);
-            funcionario.setBaseFgts(baseFgts);
+            //funcionario.setBaseInss(baseInss);
+            //funcionario.setBaseIrrf(baseIrrf);
+            //funcionario.setBaseFgts(baseFgts);
             funcionario.setFgts(fgts);
-            funcionario.setTotalVencimentos(vencimentos);
+            //funcionario.setTotalVencimentos(vencimentos);
             funcionario.setDescontosTotais(descontos);
 
-            if (vencimentos != null && descontos != null) {
-                funcionario.setTotalLiquido(vencimentos.subtract(descontos));
-            }
+            //if (vencimentos != null && descontos != null) {
+           //     funcionario.setTotalLiquido(vencimentos.subtract(descontos));
+            //}
 
             // Estimativas: confirme as alíquotas e as exceções da folha de origem.
             // A planilha pode registrar encargos zerados mesmo com base positiva.
@@ -144,7 +135,7 @@ public class ImportacaoFolhaService {
             funcionario.setValorPorCodigo(codigo, valor);
         } catch (IllegalArgumentException _) {
             log.warn("Rubrica não mapeada: código={}, funcionário={}",
-                    codigo, funcionario.getFuncionario().getNome());
+                    codigo, funcionario.getNome());
         }
     }
 
@@ -257,5 +248,19 @@ public class ImportacaoFolhaService {
             case BLANK, ERROR -> null;
             default -> null;
         };
+    }
+
+    private CentroDeCusto buscarCentroDeCusto(String nome, Integer codigoExterno, LocalDate competencia) {
+        Optional<FuncionarioImportacao> registro = funcionarioImportacaoRepository.findByNomeAndCompetencia(nome, competencia.minusMonths(1));
+        if (registro.isPresent() && registro.get().getCentroDeCusto() != null) {
+            return registro.get().getCentroDeCusto();
+        }
+        return null;
+    }
+
+    private LocalDate formatarData(String data) {
+        data = data.trim().replace("/", "-");
+        String[] partes = data.split("-");
+        return LocalDate.of(Integer.parseInt(partes[2]), Integer.parseInt(partes[1]), Integer.parseInt(partes[0]));
     }
 }

@@ -1,10 +1,8 @@
 
 package com.insights.rh.importacao;
 
-import com.insights.rh.importacao.model.Funcionario;
 import com.insights.rh.importacao.model.FuncionarioImportacao;
 import com.insights.rh.repository.FuncionarioImportacaoRepository;
-import com.insights.rh.repository.FuncionarioRepository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,7 +23,6 @@ public class ConciliacaoPagamentoService {
     private final ImportacaoPorForaService extracaoPorForaService;
 
     private final FuncionarioImportacaoRepository repository;
-    private final FuncionarioRepository funcionarioRepository;
 
     private static final String CARGO_PADRAO = "Por Fora";
 
@@ -55,18 +52,6 @@ public class ConciliacaoPagamentoService {
         ImportacaoPorForaService.ResultadoExtracao resultado =
                 extracaoPorForaService.processar(arquivoPorFora);
 
-        // 3. Indexar os cadastros já existentes
-        Map<String, List<Funcionario>> cadastroPorNome = new HashMap<>();
-
-        for (Funcionario cadastrado : funcionarioRepository.findAll()) {
-            String chave = normalizarNome(cadastrado.getNome());
-
-            if (!chave.isBlank()) {
-                cadastroPorNome
-                        .computeIfAbsent(chave, k -> new ArrayList<>())
-                        .add(cadastrado);
-            }
-        }
 
         // 4. Indexar os registros da folha
         Map<String, FuncionarioImportacao> registrosPorNome =
@@ -74,47 +59,18 @@ public class ConciliacaoPagamentoService {
 
         for (FuncionarioImportacao registro : funcionarios) {
 
-            if (registro.getFuncionario() == null) {
-                throw new IllegalStateException(
-                        "Registro da folha sem funcionário vinculado."
-                );
-            }
-
             if (!competencia.equals(registro.getCompetencia())) {
                 throw new IllegalStateException(
                         "A folha contém competências diferentes."
                 );
             }
 
-            Funcionario funcionario = registro.getFuncionario();
-
-            String chave = chaveObrigatoria(funcionario.getNome());
+            String chave = chaveObrigatoria(registro.getNome());
 
             if (registrosPorNome.containsKey(chave)) {
                 throw new IllegalStateException(
-                        "Nome duplicado na folha: " + funcionario.getNome()
+                        "Nome duplicado na folha: " + registro.getNome()
                 );
-            }
-
-            // Garantir que o funcionário está cadastrado
-            if (funcionario.getId() == null) {
-
-                Funcionario existente = buscarCadastro(
-                        chave, cadastroPorNome
-                );
-
-                if (existente != null) {
-                    registro.setFuncionario(existente);
-                } else {
-                    Funcionario salvo =
-                            funcionarioRepository.save(funcionario);
-
-                    registro.setFuncionario(salvo);
-
-                    cadastroPorNome
-                            .computeIfAbsent(chave, k -> new ArrayList<>())
-                            .add(salvo);
-                }
             }
 
             registrosPorNome.put(chave, registro);
@@ -128,19 +84,18 @@ public class ConciliacaoPagamentoService {
                     linha.nome(),
                     competencia,
                     funcionarios,
-                    registrosPorNome,
-                    cadastroPorNome
+                    registrosPorNome
             );
 
-            registro.setValeTransportePorFora(
+            registro.setValeTransporte(
                     linha.valeTransporte()
             );
 
-            registro.setValeRefeicaoPorFora(
+            registro.setValeRefeicao(
                     linha.valeRefeicao()
             );
 
-            registro.setGratificacaoPorFora(
+            registro.setComissoesComProvisao(
                     linha.gratificacao()
             );
 
@@ -157,8 +112,7 @@ public class ConciliacaoPagamentoService {
                     entrada.getKey(),
                     competencia,
                     funcionarios,
-                    registrosPorNome,
-                    cadastroPorNome
+                    registrosPorNome
             );
 
             registro.setValorBestPontos(
@@ -172,15 +126,13 @@ public class ConciliacaoPagamentoService {
 
     /**
      * Retorna um registro da competência.
-     * Caso não exista, cria um registro vinculado
-     * ao funcionário cadastrado ou a um novo cadastro.
+     * Caso não exista, cria um registro
      */
     private FuncionarioImportacao obterOuCriarRegistro(
             String nome,
             LocalDate competencia,
             List<FuncionarioImportacao> funcionarios,
-            Map<String, FuncionarioImportacao> registrosPorNome,
-            Map<String, List<Funcionario>> cadastroPorNome
+            Map<String, FuncionarioImportacao> registrosPorNome
     ) {
 
         String chave = chaveObrigatoria(nome);
@@ -191,29 +143,11 @@ public class ConciliacaoPagamentoService {
             return registro;
         }
 
-        // Procurar funcionário no cadastro
-        Funcionario funcionario = buscarCadastro(
-                chave, cadastroPorNome
-        );
-
-        // Criar somente se não estiver cadastrado
-        if (funcionario == null) {
-
-            funcionario = new Funcionario();
-            funcionario.setNome(nome.trim());
-            funcionario.setCargo(CARGO_PADRAO);
-
-            funcionario = funcionarioRepository.save(funcionario);
-
-            cadastroPorNome
-                    .computeIfAbsent(chave, k -> new ArrayList<>())
-                    .add(funcionario);
-        }
-
         // Criar lançamento financeiro da competência
         registro = new FuncionarioImportacao();
 
-        registro.setFuncionario(funcionario);
+        registro.setNome(nome.trim());
+        registro.setCargo(CARGO_PADRAO);
         registro.setCompetencia(competencia);
 
         funcionarios.add(registro);
@@ -222,32 +156,6 @@ public class ConciliacaoPagamentoService {
         registrosPorNome.put(chave, registro);
 
         return registro;
-    }
-
-    /**
-     * Localiza um cadastro pelo nome normalizado.
-     * Impede conciliação com nomes ambíguos.
-     */
-    private Funcionario buscarCadastro(
-            String chave,
-            Map<String, List<Funcionario>> cadastroPorNome
-    ) {
-
-        List<Funcionario> encontrados = cadastroPorNome.get(chave);
-
-        if (encontrados == null || encontrados.isEmpty()) {
-            return null;
-        }
-
-        if (encontrados.size() > 1) {
-            throw new IllegalStateException(
-                    "Existem múltiplos funcionários cadastrados " +
-                            "com o nome: " + chave +
-                            ". A conciliação precisa de um identificador único."
-            );
-        }
-
-        return encontrados.get(0);
     }
 
     private String chaveObrigatoria(String nome) {
