@@ -1,5 +1,6 @@
 package com.insights.rh;
 
+import com.insights.rh.analytics.CatalogoRubricas;
 import com.insights.rh.importacao.ConciliacaoPagamentoService;
 import com.insights.rh.importacao.dadosantigos.ImportacaoFolhaExcelService;
 import com.insights.rh.importacao.model.CentroDeCusto;
@@ -36,6 +37,12 @@ public class Controller {
     @GetMapping("/upload")
     public String index() {
         return "rh/upload";
+    }
+
+    @GetMapping("/guia")
+    public String guia(Model model) {
+        model.addAttribute("rubricasPorGrupo", CatalogoRubricas.porGrupo());
+        return "rh/guia";
     }
 
     @PostMapping("/extracao/processar")

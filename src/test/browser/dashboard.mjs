@@ -108,6 +108,7 @@ test('dashboard autenticado e investigação de folha', {skip: !base,timeout: 90
     await viewport(1440,900);
     await nav(new URL('/',base).href);
     await until(() => evaluate("!!document.querySelector('#password')"),'login');
+    await until(() => evaluate("document.querySelector('.login-marca img')?.naturalWidth > 0"), 'logo no login');
     await evaluate("document.querySelector('#username').value="+JSON.stringify(user)+";document.querySelector('#password').value="+JSON.stringify(password)+";document.querySelector('form').requestSubmit()");
     await ready("document.querySelectorAll('#analysis canvas').length > 0");
     assert.equal(await evaluate("location.href"), dashboard);
@@ -211,10 +212,27 @@ test('dashboard autenticado e investigação de folha', {skip: !base,timeout: 90
         assert.deepEqual(failures,[]);
     });
 
-    await t.test('navegação entre a análise filtrada e as telas de gestão', async () => {
+    await t.test('navegação entre a análise filtrada, o guia e as telas de gestão', async () => {
         const origem = dashboard + '?periodo=3&visao=evolucao';
         await nav(origem);
         await ready("!!document.querySelector('#sections [data-view=evolucao][aria-current=page]')");
+        await click('#sections a[href="/mao-de-obra/guia"]');
+        await until(() => evaluate("document.readyState === 'complete' && !!document.querySelector('#sections a[aria-current=page][href=\"/mao-de-obra/guia\"]')"), 'guia de indicadores');
+        assert.deepEqual(await evaluate("[...document.querySelectorAll('.indice-guia a')].filter(a => !document.getElementById(a.hash.slice(1))).map(a => a.hash)"), []);
+        assert.ok(await evaluate(`(async () => {
+            const rubricas = await (await fetch('/mao-de-obra/api/rubricas/catalogo')).json();
+            const nomes = [...document.querySelectorAll('#rubricas tbody tr')].map(tr => tr.cells[0].textContent);
+            return nomes.length === rubricas.length && rubricas.every(r => nomes.includes(r.nome));
+        })()`));
+        await viewport(390,844);
+        await click('.indice-guia a[href="#rubricas"]');
+        await click('#rubricas details:has(table) summary');
+        assert.ok(await evaluate("location.hash === '#rubricas' && !!document.querySelector('#rubricas details[open] table')"));
+        assert.ok(await evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), 'Largura do guia no celular');
+        await viewport(1440,900);
+        await click('[data-retorno-painel]');
+        await ready("!!document.querySelector('#analysis canvas')");
+        assert.equal(await evaluate("location.href"), origem);
         const destino = new URL(await evaluate("document.querySelector('[data-classificacao]').href"));
         const mes = destino.searchParams.get('competencia').slice(0, 7);
         await click('[data-classificacao]');

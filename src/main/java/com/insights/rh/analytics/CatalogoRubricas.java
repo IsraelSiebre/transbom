@@ -1,5 +1,6 @@
 package com.insights.rh.analytics;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -11,6 +12,11 @@ import org.springframework.web.server.ResponseStatusException;
 /** Rubricas publicadas no dashboard. As origens de comissões são representadas pela rubrica calculada. */
 public final class CatalogoRubricas {
     private CatalogoRubricas() {}
+
+    static final Map<String,String> GRUPOS_DE_CUSTO = Map.ofEntries(
+            Map.entry("remuneracao","Remunerações"), Map.entry("extras","Horas extras e adicionais"),
+            Map.entry("beneficios","Benefícios"), Map.entry("encargos","Encargos"), Map.entry("ferias","Férias e rescisões"),
+            Map.entry("provisoes","Provisões"), Map.entry("comissoes","Comissões"), Map.entry("outros","Outros"));
 
     public record Rubrica(String campo, String coluna, String nome, String grupo, String natureza,
                           String codigo, boolean aditiva, boolean derivada) {
@@ -111,6 +117,15 @@ public final class CatalogoRubricas {
 
     public static List<Rubrica> todas() {
         return TODAS;
+    }
+
+    public static Map<String, List<Rubrica>> porGrupo() {
+        return TODAS.stream().collect(Collectors.groupingBy(r -> switch (r.grupo()) {
+            case "descontos" -> "Descontos";
+            case "informativos" -> "Informativos";
+            case "totais" -> "Totais";
+            default -> GRUPOS_DE_CUSTO.get(r.grupo());
+        }, LinkedHashMap::new, Collectors.toList()));
     }
 
     public static Rubrica obter(String campo) {

@@ -10,11 +10,6 @@ import java.util.stream.Collectors;
 final class IndicadoresFolha {
     private IndicadoresFolha() {}
 
-    static final Map<String,String> TITULOS = Map.ofEntries(
-            Map.entry("remuneracao","Remunerações"), Map.entry("extras","Horas extras e adicionais"),
-            Map.entry("beneficios","Benefícios"), Map.entry("encargos","Encargos"), Map.entry("ferias","Férias e rescisões"),
-            Map.entry("provisoes","Provisões"), Map.entry("comissoes","Comissões"), Map.entry("outros","Outros"));
-
     static final Map<String,String> EXPRESSOES;
     static {
         Map<String,String> metricas = new LinkedHashMap<>();

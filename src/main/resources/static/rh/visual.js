@@ -18,6 +18,7 @@ export function action(text, handler, className='text-action') {
     return button;
 }
 const icons={
+    book:'<path d="M12 6C9 4 6 4 3 5v14c3-1 6-1 9 1 3-2 6-2 9-1V5c-3-1-6-1-9 1zm0 0v14"/>',
     overview:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
     trend:'<path d="M3 16l6-6 4 4 8-9m-6 0h6v6"/>', centers:'<rect x="3" y="13" width="5" height="8" rx="1"/><rect x="10" y="8" width="5" height="13" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/>',
     layers:'<path d="M2 8l10-5 10 5-10 5zm1 5 9 5 9-5m-18 5 9 5 9-5"/>',people:'<circle cx="9" cy="8" r="3.2"/><path d="M2 21v-2c0-6 14-6 14 0v2M16 5a3 3 0 010 6m2 4c3 0 4 2 4 5"/>',

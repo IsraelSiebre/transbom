@@ -29,6 +29,7 @@ A base de `outrosEncargosSociaisTrab` inclui o ano da competência antes da apli
 | Caminho a partir de `/mao-de-obra` | Conteúdo |
 |---|---|
 | Caminho base e `/detalhamento` | Painel executivo e investigação dos registros |
+| `/guia` | Guia de indicadores, fórmulas da folha, leitura dos gráficos e catálogo de rubricas |
 | `/api/filtros` | Competências, opções dependentes e pesquisa de funcionários com `q` |
 | `/api/resumo` | Indicadores, comparações, séries, composição, rankings, insights e auditoria |
 | `/api/detalhes` | Registros paginados, totais do recorte e subtotais |

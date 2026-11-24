@@ -49,7 +49,7 @@ class ComposicaoFolha {
             }
         }
         var decomposicao = new ArrayList<Map<String,Object>>();
-        grupos.forEach((k,v) -> decomposicao.add(linha(k,TITULOS.get(k),v,comparavel ? gruposBase.get(k) : null,percentual(v,custo))));
+        grupos.forEach((k,v) -> decomposicao.add(linha(k,CatalogoRubricas.GRUPOS_DE_CUSTO.get(k),v,comparavel ? gruposBase.get(k) : null,percentual(v,custo))));
         BigDecimal residual = custo.subtract(somaGrupos(grupos));
         BigDecimal residualBase = comparavel ? custoAnterior.subtract(somaGrupos(gruposBase)) : null;
         if (residual.signum()!=0 || (residualBase!=null && residualBase.signum()!=0))

@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title>Guia de indicadores · Transbom</title>
+    <link rel="stylesheet" th:href="@{/rh/comet-base.css}">
+    <link rel="stylesheet" th:href="@{/rh/guia.css}">
+    <script type="module" th:src="@{/rh/navegacao.js}"></script>
+</head>
+<body>
+<a class="skip" href="#conteudo">Ir para o guia</a>
+<aside th:replace="~{layout/navegacao :: lateral('guia')}"></aside>
+<div class="workspace">
+    <header th:replace="~{layout/navegacao :: topo('Business Intelligence', 'Mão de obra', ~{::.toolbar})}">
+        <div class="toolbar"><a class="btn secondary" data-retorno-painel th:href="@{/mao-de-obra}">Voltar ao painel</a></div>
+    </header>
+    <main id="conteudo" class="guia" tabindex="-1">
+        <header class="heading">
+            <div><h1>Guia de indicadores</h1>
+                <p>Como a folha se transforma nos valores, gráficos e comparações do painel de mão de obra.</p></div>
+        </header>
+        <div class="grade-guia">
+            <nav class="panel indice-guia" aria-labelledby="titulo-indice">
+                <h2 id="titulo-indice">Nesta página</h2>
+                <ul>
+                    <li><a href="#recorte">Período, filtros e comparações</a></li>
+                    <li><a href="#executiva">Visão executiva</a></li>
+                    <li><a href="#evolucao">Evolução de custos</a></li>
+                    <li><a href="#centros">Centros de custo</a></li>
+                    <li><a href="#composicao">Composição de custos</a></li>
+                    <li><a href="#rubricas">Cálculos e catálogo de rubricas</a></li>
+                    <li><a href="#pessoas">Funcionários e cargos</a></li>
+                    <li><a href="#detalhes">Detalhamento e exportação</a></li>
+                    <li><a href="#qualidade">Qualidade dos dados</a></li>
+                </ul>
+            </nav>
+            <div class="secoes-guia">
+                <section class="panel" id="recorte">
+                    <h2>Período, filtros e comparações</h2>
+                    <p>Uma <strong>competência</strong> é o mês de referência da folha. Um registro é um lançamento de uma pessoa naquele mês. O painel soma os valores em reais de todos os registros que atendem aos filtros.</p>
+                    <dl>
+                        <dt>Quais meses entram?</dt>
+                        <dd>O painel abre nas últimas 12 competências disponíveis. Os atalhos de 3, 6 e 12 meses partem das competências importadas e mostram também as lacunas entre elas. “Todo o histórico” vai da primeira à última importação. “Ano até a última competência” começa em janeiro do ano corrente. Na seleção personalizada, os dois limites do intervalo são inclusivos.</dd>
+                        <dt>O que os filtros alteram?</dt>
+                        <dd>Centro, cargo e funcionário restringem a população. Selecionar dois cargos inclui ambos. Acrescentar um centro restringe esses cargos àquele centro. Escolher uma rubrica ou um grupo define o “Valor da seleção”. Os cartões de custo geral e de quadro continuam descrevendo toda a população filtrada.</dd>
+                        <dt>Qual é a base de comparação?</dt>
+                        <dd>“Período anterior” desloca os meses selecionados pela extensão da janela. Por exemplo, abril a junho compara com janeiro a março. “Ano anterior” recua os mesmos meses em um ano. Em “Período personalizado”, o início escolhido desloca a janela e preserva o espaçamento entre os meses.</dd>
+                        <dt>Como ler Δ, % e p.p.?</dt>
+                        <dd>A diferença absoluta (Δ) é o valor atual menos a base. A variação percentual é 100 × diferença ÷ valor absoluto da base. A participação é 100 × parcela ÷ custo total do recorte. A diferença entre duas participações se lê em pontos percentuais (p.p.).</dd>
+                    </dl>
+                    <p class="exemplo"><strong>Exemplo.</strong> Um custo que passa de R$ 80 mil para R$ 100 mil aumenta R$ 20 mil, ou 25%. Se a participação de um centro passa de 25% para 30%, a mudança é de 5 p.p.</p>
+                    <p>Uma competência sem importação abre uma lacuna na série. Um mês importado pode ter custo zero para o filtro escolhido. A comparação exige cobertura de todos os meses das duas janelas. Com base zero, ainda é possível mostrar a diferença absoluta. “Sem base” ou um traço indica que falta uma referência para aquele cálculo.</p>
+                </section>
+
+                <section class="panel" id="executiva">
+                    <h2>Visão executiva</h2>
+                    <dl>
+                        <dt>Custo total e salários</dt>
+                        <dd>O custo total soma o custo de mão de obra gravado em cada lançamento, inclusive os valores sem centro de custo. “Salários” soma a rubrica Salário (8781). As duas linhas em “Evolução do custo” mostram quanto se gastou no total e quanto desse gasto corresponde a salários.</dd>
+                        <dt>Funcionários distintos e custo médio por funcionário-mês</dt>
+                        <dd>Para o quadro do período, cada pessoa conta uma vez. Para o custo médio, conte essa pessoa uma vez em cada competência em que aparece. Divida o custo total pela soma dessas contagens mensais, chamada de pessoas-mês.</dd>
+                    </dl>
+                    <p class="exemplo"><strong>Exemplo.</strong> As mesmas 10 pessoas em janeiro e fevereiro representam 10 funcionários distintos e 20 pessoas-mês. Com R$ 60.000 de custo no bimestre, o custo médio é R$ 3.000 por pessoa-mês.</p>
+                    <dl>
+                        <dt>Indicadores financeiros e operacionais</dt>
+                        <dd>FGTS soma o valor a recolher registrado na folha. Encargos já incluem esse FGTS. Descontos somam as rubricas de desconto em um total próprio. Horas extras, comissões, benefícios e provisões somam as respectivas verbas. Os cartões de centro e cargo de maior custo apontam os maiores totais acumulados. As setas dos cartões comparam o indicador com a base escolhida.</dd>
+                        <dt>Custo por centro, composição do custo e evolução do quadro</dt>
+                        <dd>As barras distribuem o gasto por operação ou por grupo de rubricas. Leia o percentual ao lado para saber a parcela do custo total. O comprimento das barras de ranking usa o maior valor exibido como referência. A linha do quadro mostra pessoas distintas no mês ou, na visão executiva anual, a média mensal de pessoas.</dd>
+                        <dt>Insights e pontos de atenção</dt>
+                        <dd>O painel destaca pendências, o centro de maior custo, a mudança do custo total e o grupo com a maior diferença em reais, em magnitude. Também sinaliza alta do custo médio quando as pessoas-mês permanecem iguais e a maior oscilação mensal de pelo menos 20%, em qualquer direção. “Investigar” abre a análise relacionada.</dd>
+                    </dl>
+                </section>
+
+                <section class="panel" id="evolucao">
+                    <h2>Evolução de custos</h2>
+                    <dl>
+                        <dt>Série da métrica e comparação entre anos</dt>
+                        <dd>Escolha a métrica e o agrupamento mensal ou anual. Cada ponto traz o valor do período. Os destaques marcam o máximo e o mínimo entre os valores disponíveis. Na comparação entre anos, cada linha é um ano e os meses ocupam a mesma posição no eixo horizontal. Use a legenda para alternar séries e “Ver valores por período” para consultar os números.</dd>
+                        <dt>Histórico por competência e custo e quadro</dt>
+                        <dd>As barras mostram o custo total dos meses importados em ordem cronológica. Na tabela, “Δ pessoas” subtrai o quadro do mês anterior e “Δ custo MoM” mede a variação percentual do custo contra esse mês. “Maiores mudanças mensais” destaca os maiores aumentos e quedas do custo em % e do quadro em pessoas.</dd>
+                        <dt>Comparações de custo</dt>
+                        <dd>O mês de referência é o último solicitado. MoM compara com o mês imediatamente anterior. YoY compara com o mesmo mês do ano anterior. O acumulado do ano compara a soma de janeiro até o mês de referência com os mesmos meses do ano anterior.</dd>
+                        <dt>Quanto da diferença acompanha o quadro e o custo médio?</dt>
+                        <dd>A parcela do quadro é (pessoas-mês atuais − pessoas-mês da base) × custo médio da base, calculada a partir dos totais e arredondada a centavos. A parcela do custo médio é a diferença total menos a parcela do quadro. Juntas elas recompõem a mudança em reais. O painel exibe essa decomposição quando há pessoas-mês nos dois períodos comparáveis.</dd>
+                        <dt>Visão anual</dt>
+                        <dd>O custo médio mensal divide o custo do ano pelos meses importados no recorte. O quadro médio divide as pessoas-mês por esses mesmos meses. “Pessoas únicas” conta cada pessoa uma vez no ano selecionado. “Quadro final” conta as pessoas na última competência importada do recorte daquele ano. A variação anual compara os meses selecionados com seus equivalentes do ano anterior.</dd>
+                    </dl>
+                </section>
+
+                <section class="panel" id="centros">
+                    <h2>Centros de custo</h2>
+                    <dl>
+                        <dt>Custo, horas extras e comissões por operação</dt>
+                        <dd>Os rankings ordenam os centros pelo valor acumulado da medida indicada. Em “Evolução por centro”, cada linha acompanha o custo de uma operação mês a mês. “Sem centro de custo” reúne os lançamentos que aguardam classificação.</dd>
+                        <dt>Composição por operação</dt>
+                        <dd>Cada barra empilhada representa 100% do custo daquele centro. Cada faixa é o valor da parcela dividido pelo total do próprio centro. “Demais parcelas” é o saldo após salário, horas extras, comissões, benefícios, encargos e provisões. Quando os valores impedem representar as proporções, a matriz traz os montantes em reais.</dd>
+                        <dt>Matriz de centros de custo</dt>
+                        <dd>Cada linha reúne as pessoas distintas, os custos, os salários e as médias do centro. A participação usa o custo total filtrado. As variações em R$ e % comparam com a base escolhida. As colunas “Último mês” comparam a última competência solicitada com o mês anterior e com o mesmo mês do ano anterior. A mudança de participação é expressa em p.p.</dd>
+                        <dt>Mapa de calor mensal</dt>
+                        <dd>Cruze a linha do centro com a coluna do mês. A intensidade aumenta com a magnitude do custo em relação ao maior valor da matriz. A célula mostra o valor em reais ou “Sem importação”. Selecione-a para abrir a operação naquela competência.</dd>
+                    </dl>
+                </section>
+
+                <section class="panel" id="composicao">
+                    <h2>Composição de custos</h2>
+                    <p>Uma <strong>rubrica</strong> é uma verba da folha, como salário ou vale-transporte. Os oito grupos de custo reúnem remunerações, horas extras e adicionais, comissões, benefícios, encargos, provisões, férias e rescisões e outras despesas. Cada parcela direta pertence a um grupo.</p>
+                    <dl>
+                        <dt>Principais rubricas e composição por grupo</dt>
+                        <dd>Em reais, é possível consultar também descontos e valores informativos. Em “Participação no custo”, as rubricas exibidas são as parcelas diretas e o denominador é o custo total filtrado. No catálogo, um traço em “% do custo” indica que a verba está fora da decomposição ou que o denominador é zero. A diferença de conciliação é o custo gravado menos a soma dos oito grupos. Ela aparece em linha própria se houver diferença no período ou na base.</dd>
+                        <dt>Valor acumulado, saldo e distribuição da seleção</dt>
+                        <dd>Selecionar uma rubrica soma seu valor em todos os lançamentos do recorte. Selecionar um grupo soma suas parcelas, e o grupo Descontos usa o total de descontos gravado. A linha acompanha a seleção por mês e as barras mostram o valor por centro e por cargo. Para parcelas diretas, o saldo é o custo total menos o valor selecionado.</dd>
+                        <dt>Variação por componente e rubricas com maior aumento ou redução</dt>
+                        <dd>A tabela calcula atual menos base para cada grupo. A soma das diferenças, incluindo a conciliação, explica a mudança total. Os rankings de aumento e redução ordenam as parcelas diretas pela diferença em reais.</dd>
+                        <dt>Despesas variáveis, horas extras e comissões por centro</dt>
+                        <dd>As linhas comparam os valores mensais de horas extras, comissões e provisões. As barras por centro acumulam os valores do período. O indicador “Horas extras” soma as verbas de horas extras em reais, incluindo as de banco. O grupo “Horas extras e adicionais” inclui também adicionais e reflexos, como periculosidade e descanso semanal remunerado (DSR).</dd>
+                    </dl>
+                </section>
+
+                <section class="panel" id="rubricas">
+                    <h2>Cálculos e catálogo de rubricas</h2>
+                    <p>Ao salvar um lançamento, a folha calcula as verbas abaixo. Campos vazios contribuem com zero nas somas. No catálogo, “Componente do custo” identifica cada parcela somada ao custo de mão de obra. “Componente dos descontos” alimenta o total de descontos, apurado separadamente. Totais e valores de origem têm sua própria identificação para evitar dupla contagem.</p>
+                    <dl>
+                        <dt>Provisão de férias e de 13º salário</dt>
+                        <dd>A base soma salário (8781), PLR (873), horas extras dos códigos 150, 264 (campo principal), 200 e 257, adicional noturno (214) e insalubridade (16). A provisão de férias é a base dividida por 36. A de 13º é a mesma base dividida por 12. Cada resultado é arredondado a centavos.</dd>
+                        <dt>Comissões com e sem provisão</dt>
+                        <dd>O total soma os dois tipos. Na conciliação, a gratificação da aba Ricieri alimenta as comissões com provisão. Para as comissões sem provisão, Transferência (TRANSF) usa o valor de BESTPONTOS e os demais centros usam a comissão por fora. A folha consolidada fornece um único valor para essa escolha. O painel contabiliza a comissão resultante uma vez.</dd>
+                        <dt>Benefícios</dt>
+                        <dd>O grupo soma cesta básica, vale-transporte, vale-refeição e adicionais de saúde e odontologia. A cesta assume R$ 180,00 quando o valor está ausente. O adicional odontológico é R$ 17,28 quando o desconto odontológico (259) é positivo, e zero nos demais casos. O adicional Santa Casa Saúde usa o valor do convênio de saúde (282).</dd>
+                    </dl>
+                    <p>A folha prevê duas exceções individuais para a cesta, as comissões sem provisão, as provisões e os adicionais de saúde e odontologia. Nesses lançamentos, essas verbas conservam os valores já registrados.</p>
+                    <details>
+                        <summary>Como são calculados os outros encargos sociais e trabalhistas?</summary>
+                        <p><strong>Outros encargos = 7,3% × (soma das verbas abaixo − desconto de empréstimo − faltas injustificadas em horas + ano da competência).</strong> O cálculo usa o ano como número e arredonda o resultado a centavos. Por exemplo, uma competência de 2026 acrescenta 2.026 à base antes de aplicar a taxa.</p>
+                        <ul>
+                            <li>Salário, pró-labore, adiantamento de salário, salário-família e licença remunerada.</li>
+                            <li>Horas extras dos códigos 285, 150, 264 (campo principal), 200 e 257, adicionais noturnos 226 e 214 e insalubridade.</li>
+                            <li>Provisão de férias, reflexo de extras em DSR e verbas de DSR sobre jornada noturna, adicional noturno e horas extras noturnas a 50% ou extras a 100%.</li>
+                            <li>Abono pecuniário, um terço sobre abono, dias de abono, saldo de salário e adicional de férias da rescisão, férias sobre aviso prévio, valor líquido da rescisão, férias proporcionais e os dois campos de 13º na rescisão (8552 e 8550).</li>
+                        </ul>
+                        <p>O desconto de empréstimo é a rubrica 205 e as faltas injustificadas em horas são a 8069. O grupo “Encargos” reúne esse resultado, o FGTS, o seguro de acidente de trabalho e as contribuições a outras entidades.</p>
+                    </details>
+                    <h3>Rubricas por grupo</h3>
+                    <p>Abra um grupo para consultar as verbas do catálogo usado pelo painel. O código 264 alimenta dois campos de hora extra noturna a 100%. Os dois entram no custo e no indicador de horas extras. Um traço na coluna de código indica que o catálogo identifica a verba pelo nome.</p>
+                    <div>
+                        <details th:each="grupo : ${rubricasPorGrupo}">
+                            <summary th:text="${grupo.key}"></summary>
+                            <table>
+                                <caption class="visually-hidden" th:text="|Rubricas de ${grupo.key}|"></caption>
+                                <thead><tr><th scope="col">Rubrica</th><th scope="col">Código na folha</th><th scope="col">Natureza</th></tr></thead>
+                                <tbody>
+                                    <tr th:each="rubrica : ${grupo.value}">
+                                        <td th:text="${rubrica.nome}"></td>
+                                        <td th:text="${rubrica.codigo ?: '—'}"></td>
+                                        <td><span th:text="${rubrica.natureza}"></span><small th:if="${rubrica.derivada and rubrica.grupo != 'totais'}">Calculada na folha</small></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </details>
+                    </div>
+                </section>
+
+                <section class="panel" id="pessoas">
+                    <h2>Funcionários e cargos</h2>
+                    <dl>
+                        <dt>Salário médio, mediana, menor e maior salário</dt>
+                        <dd>Primeiro, o painel soma os salários de cada pessoa dentro de cada competência com salário informado. Cada par pessoa e mês fornece uma observação. A média divide a soma dessas observações pela quantidade delas. A mediana é o valor central em ordem crescente, ou a média dos dois centrais. O mínimo e o máximo são os extremos da mesma distribuição.</dd>
+                        <dt>Distribuição salarial</dt>
+                        <dd>Cada barra conta observações de salário em uma faixa. Há faixas próprias para valores negativos e para zero. As faixas positivas mudam em R$ 2 mil, R$ 4 mil, R$ 6 mil e R$ 10 mil. Uma pessoa pode aparecer em vários meses. Selecionar uma faixa mostra os funcionários, competências e valores que a compõem.</dd>
+                        <dt>Rankings de salários, custo individual e funcionários na seleção</dt>
+                        <dd>Os rankings somam, por pessoa, o salário ou o custo dos meses selecionados. A tabela de funcionários mostra as competências com registro e o valor da rubrica, grupo ou custo escolhido. A mudança compara esse valor com sua base. A participação usa o custo da pessoa dividido pelo custo total. Em “Todos os filtros” é possível escolher o tamanho dos rankings.</dd>
+                        <dt>Quadro, custo médio e cargos</dt>
+                        <dd>“Custo médio por funcionário” divide o custo de cada mês por suas pessoas distintas. As barras por centro e cargo contam cada pessoa uma vez por grupo. Quem muda de lotação pode aparecer em mais de um grupo. “Cargos por custo” soma o gasto por função. “Cargos por salário médio” usa as observações salariais por pessoa e mês de cada cargo.</dd>
+                        <dt>Evolução e matrizes</dt>
+                        <dd>“Evolução dos cargos” acompanha mês a mês até oito dos cargos de maior custo. “Indicadores por cargo” reúne custos, salários, médias, participação e variação para cada função. A matriz de cargos e centros cruza as duas dimensões e mostra custo e pessoas distintas em cada combinação.</dd>
+                        <dt>Perfil individual</dt>
+                        <dd>Ao selecionar uma pessoa, o histórico reúne salário, custo, encargos, benefícios, provisões, descontos e rubricas por competência, cargo e centro. As médias do cargo e do centro dividem o custo do grupo pelas pessoas distintas daquele mês, incluindo a pessoa consultada. O tempo de vínculo conta os meses entre o mês da admissão registrada e o da competência.</dd>
+                    </dl>
+                </section>
+
+                <section class="panel" id="detalhes">
+                    <h2>Detalhamento e exportação</h2>
+                    <p>Cada linha corresponde a um registro importado. Ao abrir o detalhamento diretamente, a consulta começa na última competência. Use a busca por nome ou cargo, escolha colunas e expanda um registro para conferir suas rubricas ou abrir o perfil da pessoa.</p>
+                    <dl>
+                        <dt>Totais e subtotais</dt>
+                        <dd>“Registros encontrados” conta lançamentos. Os cartões de custo, salários e descontos e o rodapé somam todos os registros que atendem aos filtros e à busca, inclusive os das outras páginas. Agrupar por cargo ou centro mostra esses mesmos totais para cada grupo.</dd>
+                        <dt>Exportar e imprimir</dt>
+                        <dd>“Exportar” gera CSV ou Excel (XLSX) de registros de funcionários, centros, cargos, rubricas ou histórico mensal ou anual. Cada arquivo usa o período e a população da consulta. A exportação de registros inclui todas as páginas da busca e respeita as colunas escolhidas. “Imprimir análise” abre a impressão do navegador, que também permite salvar em PDF.</dd>
+                    </dl>
+                </section>
+
+                <section class="panel" id="qualidade">
+                    <h2>Qualidade dos dados</h2>
+                    <dl>
+                        <dt>Origem e cobertura mensal</dt>
+                        <dd>A importação da folha consolidada grava lançamentos por competência. A conciliação combina a folha do mês com pagamentos complementares, associando nomes normalizados. “Última importação” é a competência mais recente presente na base. “Competências importadas” conta os meses de todo o histórico. A tabela de cobertura e as competências ausentes se referem ao intervalo selecionado.</dd>
+                        <dt>Conciliação financeira e classificação</dt>
+                        <dd>Custo classificado + custo pendente = custo geral. O pendente reúne registros sem centro. A diferença da composição confronta o custo geral com a soma das rubricas diretas. Em “Classificar centros”, as pendências contam lançamentos da competência. “Prontos para salvar” conta os que já receberam uma escolha no formulário e “A preencher” mostra o restante. Salvar aplica o centro e recalcula o lançamento.</dd>
+                        <dt>Identificação e possíveis duplicidades</dt>
+                        <dd>A contagem usa o CPF normalizado. Quando ele falta ou é inutilizável, o sistema recorre à combinação de código externo e nome. Essa chave pode ligar o histórico a um CPF quando a associação é única. Se faltar uma chave confiável, o registro fica individual. Possíveis duplicidades = número de registros − número de pares distintos de pessoa e competência. Dois lançamentos da mesma pessoa no mesmo mês geram uma ocorrência. Ambos os valores entram nas somas financeiras.</dd>
+                        <dt>Integridade cadastral</dt>
+                        <dd>As linhas contam registros sem centro, cargo ou CPF, isolados por falta de identificador, vinculados por chave legada ou com uma chave associada a vários CPFs. “Admissão instável” sinaliza datas de admissão diferentes para o mesmo código e nome no histórico. “Competência anterior à admissão” sinaliza lançamentos em meses anteriores ao mês da admissão informada. Um registro pode ter mais de uma ocorrência.</dd>
+                        <dt>Rubricas sem valores e maiores oscilações</dt>
+                        <dd>Uma rubrica aparece na lista quando todos os seus campos estão vazios no recorte. Um zero preenchido já conta como valor informado. As oscilações ordenam as variações percentuais mensais pelo tamanho da mudança, tanto para altas quanto para quedas. Abra a competência para conferir os lançamentos que explicam o movimento.</dd>
+                    </dl>
+                </section>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

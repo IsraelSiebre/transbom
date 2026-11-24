@@ -93,7 +93,8 @@ public class MaoDeObraAnalyticsService {
         out.put("atual",atual.total());
         out.put("decomposicaoQuadro",comparavel ? decomporQuadro(atual.total(),base.total()) : Map.of());
         String rubrica = p.getFirst("rubrica"), grupo = p.getFirst("grupo");
-        boolean selecaoAditiva = rubrica != null ? CatalogoRubricas.obter(rubrica).aditiva() : grupo != null && TITULOS.containsKey(grupo);
+        boolean selecaoAditiva = rubrica != null ? CatalogoRubricas.obter(rubrica).aditiva()
+                : grupo != null && CatalogoRubricas.GRUPOS_DE_CUSTO.containsKey(grupo);
         out.put("saldoComposicao",selecaoAditiva ? custo.subtract(numero(atual.total(),"valor")) : null);
         out.put("anterior",comparavel ? base.total() : null);
         out.put("variacoes",variacoes(atual.total(),base.total(),comparavel));

@@ -21,7 +21,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers("/login").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/rh/comet-base.css", "/rh/acesso.css",
+                        .requestMatchers(HttpMethod.GET, "/global/logo_transbom.png", "/rh/comet-base.css", "/rh/acesso.css",
                                 "/rh/vendor/roboto.woff2", "/rh/vendor/roboto-mono.woff2").permitAll()
                         .requestMatchers("/usuarios/novo", "/mao-de-obra/folha", "/mao-de-obra/upload",
                                 "/mao-de-obra/extracao/processar").hasRole(Role.ADMIN.name())

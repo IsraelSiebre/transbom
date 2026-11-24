@@ -17,6 +17,10 @@
     margin: 0 auto 28px;
 }
 
+.login-marca img {
+    width: 154px;
+}
+
 .login-card {
     padding: clamp(24px, 4vw, 38px);
     gap: 24px;

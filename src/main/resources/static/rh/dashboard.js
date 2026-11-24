@@ -65,7 +65,7 @@ function chrome(ctx){
     const classificacao = new URL(base+'/funcionarios/sem-centro-custo', location.origin);
     if (competencia) classificacao.searchParams.set('competencia', competencia.slice(0,7)+'-01');
     q('[data-classificacao]').href = classificacao;
-    for(const a of document.querySelectorAll('#sections a')){a.href=url(a.dataset.view,p);if(a.dataset.view===view)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');}
+    for(const a of document.querySelectorAll('#sections a[data-view]')){a.href=url(a.dataset.view,p);if(a.dataset.view===view)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');}
 }
 async function render(){
     controller?.abort();controller=new AbortController();const signal=controller.signal,view=viewFromPage(),params=paramsFromPage(),status=q('#status');

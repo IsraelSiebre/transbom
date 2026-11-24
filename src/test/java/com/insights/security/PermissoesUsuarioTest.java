@@ -53,10 +53,11 @@ class PermissoesUsuarioTest {
     @EnumSource(Role.class)
     void perfisAcessamFuncoesComunsEVeemSeuMenu(Role role) throws Exception {
         var sessao = user("conta").roles(role.name());
-        for (String pagina : List.of("/mao-de-obra", "/mao-de-obra/detalhamento", CLASSIFICAR, "/minha-conta/senha")) {
+        for (String pagina : List.of("/mao-de-obra", "/mao-de-obra/detalhamento", "/mao-de-obra/guia", CLASSIFICAR, "/minha-conta/senha")) {
             String html = mvc.perform(get(pagina).with(sessao)).andExpect(status().isOk())
                     .andReturn().getResponse().getContentAsString();
-            assertThat(html).contains("data-classificacao", "href=\"/minha-conta/senha\"");
+            assertThat(html).contains("data-classificacao", "href=\"/minha-conta/senha\"",
+                    "href=\"/mao-de-obra/guia\"", "src=\"/global/logo_transbom.png\"");
             for (String caminho : PAGINAS_ADMIN) {
                 assertThat(html.contains("href=\"" + caminho + "\"")).as(caminho).isEqualTo(role == Role.ADMIN);
             }

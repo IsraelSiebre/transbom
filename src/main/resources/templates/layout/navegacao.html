@@ -2,14 +2,8 @@
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <body>
 <th:block th:fragment="marca">
-    <svg aria-hidden="true" width="36" height="36" viewBox="0 0 36 36">
-        <rect width="36" height="36" rx="9" fill="#6064ff"/>
-        <g fill="white">
-            <path d="M7 11h22l-3.4 4.5H18L11 26H6l7-10.5H4z"/>
-            <path d="M20.8 18h6l-5.3 8H15.5z" opacity=".72"/>
-        </g>
-    </svg>
-    <span>Transbom<small>Business Intelligence</small></span>
+    <img th:src="@{/global/logo_transbom.png}" width="1672" height="941" alt="Transbom">
+    <small>Business Intelligence</small>
 </th:block>
 
 <aside id="sidebar" th:fragment="lateral(ativa)">
@@ -25,6 +19,7 @@
         <a data-view="pessoas" th:href="@{/mao-de-obra(visao=pessoas)}"><i data-icon="people"></i>Funcionários e cargos</a>
         <a data-view="detalhes" th:href="@{/mao-de-obra/detalhamento}"><i data-icon="table"></i>Detalhamento</a>
         <a data-view="qualidade" th:href="@{/mao-de-obra(visao=qualidade)}"><i data-icon="quality"></i>Qualidade dos dados</a>
+        <a th:href="@{/mao-de-obra/guia}" th:attr="aria-current=${ativa == 'guia' ? 'page' : null}"><i data-icon="book"></i>Guia de indicadores</a>
     </nav>
     <nav class="nav-extra" aria-label="Gestão">
         <p class="nav-label">Gestão</p>
