@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:fragment="dashboard(inicial)">
+<head>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark"><title>Mão de obra · Transbom</title>
+    <link rel="stylesheet" th:href="@{/rh/comet-base.css}">
+    <link rel="stylesheet" th:href="@{/rh/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/rh/organizacao.css}">
+    <script defer th:src="@{/rh/vendor/chart.umd.min.js}"></script>
+    <script type="module" th:src="@{/rh/dashboard.js}"></script>
+</head>
+<body th:data-view="${inicial}" th:data-base="@{/mao-de-obra}">
+<a class="skip" href="#conteudo">Ir para a análise</a>
+<aside th:replace="~{layout/navegacao :: lateral('')}"></aside>
+<div class="workspace">
+    <header th:replace="~{layout/navegacao :: topo('Business Intelligence', 'Mão de obra', ~{::.dashboard-actions})}">
+        <div class="toolbar dashboard-actions"><button type="button" id="print" class="icon-button" title="Imprimir análise" aria-label="Imprimir análise"><i data-icon="print"></i></button>
+            <button class="btn secondary" id="export-open"><i data-icon="download"></i>Exportar</button></div>
+    </header>
+    <main id="conteudo" tabindex="-1">
+        <div class="heading"><div><h1 id="title" th:text="${inicial == 'detalhes' ? 'Detalhamento analítico' : 'Visão executiva'}"></h1><p id="subtitle">Custos de mão de obra e evolução do quadro de funcionários.</p></div><span class="period-stamp" id="period-stamp"></span></div>
+        <noscript>Ative o JavaScript para consultar e navegar pelas análises.</noscript>
+        <div class="filter-strip" aria-label="Filtros globais">
+            <label><span>Período</span><select id="period"><option value="ultimo">Última competência</option><option value="3">Últimos 3 meses</option><option value="6">Últimos 6 meses</option><option value="12">Últimos 12 meses</option><option value="ytd">Ano até a última competência</option><option value="historico">Todo o histórico</option><option value="personalizado">Seleção personalizada</option></select></label>
+            <label><span>Centro de custo</span><select id="quick-center"><option value="">Todos os centros</option></select></label>
+            <label><span>Comparar com</span><select id="comparison"><option value="anterior">Período anterior</option><option value="anual">Ano anterior</option><option value="personalizado">Período personalizado</option></select></label>
+            <button class="btn secondary" id="filter-open"><i data-icon="filters"></i>Todos os filtros</button>
+        </div>
+        <div class="chips" id="chips" aria-label="Filtros ativos"></div>
+        <div th:if="${qntFuncionariosSemCC != null and qntFuncionariosSemCC > 0}" id="legacy-alert" class="notice"><a th:href="@{/mao-de-obra/funcionarios/sem-centro-custo(competencia=${competencia})}" th:text="|${qntFuncionariosSemCC} registro(s) aguardando centro de custo|"></a></div>
+        <div id="status" role="status" aria-live="polite">Consultando a folha…</div>
+        <section id="analysis" aria-label="Resultado da análise" aria-busy="true"></section>
+    </main>
+</div>
+<dialog id="filters-dialog" aria-labelledby="filter-title"><form id="filters-form">
+    <header><h2 id="filter-title">Filtros da análise</h2><button class="icon-button" data-close type="button" aria-label="Fechar filtros"><i data-icon="close"></i></button></header>
+    <div id="filter-fields" class="dialog-body"></div><footer><button class="btn secondary" type="button" id="clear-all">Limpar filtros</button><button class="btn primary">Aplicar filtros</button></footer>
+</form></dialog>
+<dialog id="export-dialog" aria-labelledby="export-title"><form id="export-form">
+    <header><h2 id="export-title">Exportar dados filtrados</h2><button class="icon-button" data-close type="button" aria-label="Fechar exportação"><i data-icon="close"></i></button></header>
+    <div class="dialog-body"><label>Dados<select name="tipo"><option value="funcionarios">Registros de funcionários</option><option value="centros">Centros de custo</option><option value="cargos">Cargos</option><option value="rubricas">Rubricas</option><option value="mensal">Histórico mensal</option><option value="anual">Histórico anual</option></select></label><label>Formato<select name="formato"><option value="xlsx">Planilha Excel (.xlsx)</option><option value="csv">Texto separado (.csv)</option></select></label></div>
+    <footer><button class="btn primary"><i data-icon="download"></i>Baixar arquivo</button></footer>
+</form></dialog>
+</body></html>

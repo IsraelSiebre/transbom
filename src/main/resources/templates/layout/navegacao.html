@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="marca">
+    <svg aria-hidden="true" width="36" height="36" viewBox="0 0 36 36">
+        <rect width="36" height="36" rx="9" fill="#6064ff"/>
+        <g fill="white">
+            <path d="M7 11h22l-3.4 4.5H18L11 26H6l7-10.5H4z"/>
+            <path d="M20.8 18h6l-5.3 8H15.5z" opacity=".72"/>
+        </g>
+    </svg>
+    <span>Transbom<small>Business Intelligence</small></span>
+</th:block>
+
+<aside id="sidebar" th:fragment="lateral(ativa)">
+    <a class="brand" th:href="@{/mao-de-obra}" aria-label="Transbom, visão executiva">
+        <th:block th:replace="~{layout/navegacao :: marca}"/>
+    </a>
+    <p class="nav-label">Análises de mão de obra</p>
+    <nav id="sections" aria-label="Análises">
+        <a data-view="executiva" th:href="@{/mao-de-obra}"><i data-icon="overview"></i>Visão executiva</a>
+        <a data-view="evolucao" th:href="@{/mao-de-obra(visao=evolucao)}"><i data-icon="trend"></i>Evolução de custos</a>
+        <a data-view="centros" th:href="@{/mao-de-obra(visao=centros)}"><i data-icon="centers"></i>Centros de custo</a>
+        <a data-view="composicao" th:href="@{/mao-de-obra(visao=composicao)}"><i data-icon="layers"></i>Composição de custos</a>
+        <a data-view="pessoas" th:href="@{/mao-de-obra(visao=pessoas)}"><i data-icon="people"></i>Funcionários e cargos</a>
+        <a data-view="detalhes" th:href="@{/mao-de-obra/detalhamento}"><i data-icon="table"></i>Detalhamento</a>
+        <a data-view="qualidade" th:href="@{/mao-de-obra(visao=qualidade)}"><i data-icon="quality"></i>Qualidade dos dados</a>
+    </nav>
+    <nav class="nav-extra" aria-label="Gestão">
+        <p class="nav-label">Gestão</p>
+        <a th:if="${administrador}" th:href="@{/mao-de-obra/folha}" th:attr="aria-current=${ativa == 'folha' ? 'page' : null}"><i data-icon="upload"></i>Importar folha</a>
+        <a th:if="${administrador}" th:href="@{/mao-de-obra/upload}" th:attr="aria-current=${ativa == 'conciliacao' ? 'page' : null}"><i data-icon="checks"></i>Conciliar pagamentos</a>
+        <a data-classificacao th:href="${competencia != null} ? @{/mao-de-obra/funcionarios/sem-centro-custo(competencia=${competencia})} : @{/mao-de-obra/funcionarios/sem-centro-custo}"
+           th:attr="aria-current=${ativa == 'pendencias' ? 'page' : null}"><i data-icon="flag"></i>Classificar centros</a>
+        <a th:if="${administrador}" th:href="@{/usuarios/novo}" th:attr="aria-current=${ativa == 'usuarios' ? 'page' : null}"><i data-icon="user"></i>Criar usuário</a>
+        <a th:href="@{/minha-conta/senha}" th:attr="aria-current=${ativa == 'senha' ? 'page' : null}"><i data-icon="lock"></i>Alterar minha senha</a>
+    </nav>
+    <form class="session" method="post" th:action="@{/logout}">
+        <button type="submit"><i data-icon="logout"></i>Sair do sistema</button>
+    </form>
+</aside>
+
+<header class="topbar" th:fragment="topo(area, modulo, acoes)">
+    <button class="icon-button mobile-menu" type="button" id="menu" aria-controls="sidebar"
+            aria-expanded="false" aria-label="Abrir navegação"><i data-icon="menu"></i></button>
+    <div class="crumb">
+        <i data-icon="overview"></i><span th:text="${area}"></span>
+        <b aria-hidden="true">/</b><strong th:text="${modulo}"></strong>
+    </div>
+    <th:block th:replace="${acoes}"/>
+</header>
+</body>
+</html>

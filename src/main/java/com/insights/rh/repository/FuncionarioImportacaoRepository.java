@@ -13,6 +13,8 @@ public interface FuncionarioImportacaoRepository extends JpaRepository<Funcionar
 
     List<FuncionarioImportacao> findAllByCompetencia(LocalDate competencia);
 
+    long countByCompetenciaAndCentroDeCustoIsNull(LocalDate competencia);
+
     Optional<FuncionarioImportacao> findByNomeAndCompetencia(String nome, LocalDate competencia);
 
 

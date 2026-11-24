@@ -1,0 +1,49 @@
+.acesso {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: 32px 20px;
+}
+
+.login {
+    width: min(100%, 440px);
+    padding: 0;
+}
+
+.login-marca {
+    width: fit-content;
+    padding: 0;
+    margin: 0 auto 28px;
+}
+
+.login-card {
+    padding: clamp(24px, 4vw, 38px);
+    gap: 24px;
+}
+
+.login-card h1 {
+    font-size: 29px;
+    line-height: 1.2;
+}
+
+.login-card header p {
+    margin-top: 8px;
+    font-size: 14px;
+}
+
+.login-card form {
+    display: grid;
+    gap: 18px;
+}
+
+.login-card .btn {
+    min-height: 45px;
+    margin-top: 7px;
+    font-size: 15px;
+}
+
+.login-card .btn span {
+    font-size: 19px;
+    line-height: 1;
+}

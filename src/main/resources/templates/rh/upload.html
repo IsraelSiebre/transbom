@@ -1,315 +1,48 @@
-<!DOCTYPE html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" th:content="${_csrf.token}">
-    <meta name="csrf-header" th:content="${_csrf.headerName}">
-    <title>Importação de Mão de Obra</title>
-
-    <style>
-        * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            background: #f5f7fb;
-            color: #182335;
-            font-family: Arial, sans-serif;
-            padding: 48px 24px;
-        }
-
-        main {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        h1 {
-            font-size: 28px;
-            margin-bottom: 8px;
-        }
-
-        .subtitle {
-            color: #687487;
-            margin-bottom: 32px;
-        }
-
-        .card {
-            background: white;
-            border: 1px solid #e1e6ed;
-            border-radius: 12px;
-            padding: 28px;
-            margin-bottom: 24px;
-        }
-
-        .upload-area {
-            border: 2px dashed #bac6d7;
-            border-radius: 10px;
-            padding: 42px 20px;
-            text-align: center;
-            cursor: pointer;
-            background: #fafcff;
-        }
-
-        .upload-area:hover {
-            border-color: #2563eb;
-        }
-
-        .upload-area strong {
-            display: block;
-            margin-bottom: 10px;
-        }
-
-        .upload-area p {
-            color: #64748b;
-            font-size: 14px;
-        }
-
-        input[type="file"] {
-            display: none;
-        }
-
-        .filename {
-            margin-top: 16px;
-            color: #2563eb;
-            font-size: 14px;
-        }
-
-        button {
-            background: #2563eb;
-            border: none;
-            padding: 13px 24px;
-            border-radius: 7px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-
-        button:disabled {
-            background: #94a3b8;
-            cursor: not-allowed;
-        }
-
-        .secondary {
-            background: #e8eef8;
-            color: #1d4ed8;
-        }
-
-        .status {
-            margin-top: 18px;
-            font-size: 14px;
-        }
-
-        .error { color: #dc2626; }
-        .success { color: #15803d; }
-
-        .hidden { display: none; }
-
-        .table-container {
-            overflow-x: auto;
-            max-height: 550px;
-            overflow-y: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-
-        th, td {
-            padding: 12px;
-            border-bottom: 1px solid #e5e7eb;
-            text-align: left;
-        }
-
-        th {
-            background: #f8fafc;
-            position: sticky;
-            top: 0;
-        }
-
-        .summary {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-    </style>
-</head>
-
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/gestao :: pagina('Conciliar pagamentos', 'conciliacao', ~{::article})}">
 <body>
-<main>
-
-    <h1>Importação de Mão de Obra</h1>
-    <p class="subtitle">
-        Envie a planilha de extrato para processar os dados.
-    </p>
-
-    <div class="card">
-
-        <form id="uploadForm"
-                th:action="@{/mao-de-obra/extracao/processar}"
-                method="post"
-                enctype="multipart/form-data"
-        >
-            <label for="folha">Folha de pagamento</label>
-            <input
-                    type="file"
-                    id="folha"
-                    name="folha"
-                    accept=".xlsx,.xls"
-                    required
-            >
-
-            <label for="porFora">Pagamentos por fora</label>
-            <input
-                    type="file"
-                    id="porFora"
-                    name="porFora"
-                    accept=".xlsx,.xls"
-                    required
-            >
-
-            <button type="submit" id="btnEnviar">
-                Processar arquivos
-            </button>
-            <p id="status" role="status" aria-live="polite"></p>
-        </form>
-
-    </div>
-
-    <div class="card hidden" id="resultado">
-
-        <div class="summary">
-            <div>
-                <h2>Resultado do processamento</h2>
-                <p id="totalRegistros"></p>
+<article class="pagina-gestao">
+    <header class="heading">
+        <div><h1>Conciliar pagamentos</h1><p>Combine a folha de pagamento e os valores pagos por fora para registrar a competência.</p></div>
+    </header>
+    <div class="grade-operacao">
+        <form class="panel painel-formulario" id="uploadForm" data-envio="conciliacao"
+              th:action="@{/mao-de-obra/extracao/processar}" method="post" enctype="multipart/form-data"
+              th:attr="data-csrf-header=${_csrf.headerName},data-csrf-token=${_csrf.token}">
+            <header class="cabecalho-painel"><span class="icone-painel"><i data-icon="checks"></i></span><h2>Arquivos da competência</h2></header>
+            <div class="campos">
+                <th:block th:replace="~{rh/arquivo :: seletor('folha', 'Folha de pagamento', '.xlsx,.xls', 'XLSX ou XLS')}"/>
+                <th:block th:replace="~{rh/arquivo :: seletor('porFora', 'Pagamentos por fora', '.xlsx,.xls', 'XLSX ou XLS')}"/>
+                <p class="feedback" id="statusEnvio" data-feedback role="status" aria-live="polite" aria-atomic="true"></p>
             </div>
-
-            <button class="secondary"
-                    id="btnDownload"
-                    type="button">
-                Baixar JSON
-            </button>
-        </div>
-
-        <div class="table-container">
+            <footer class="acoes-formulario">
+                <a class="btn secondary" data-retorno-painel th:href="@{/mao-de-obra}">Voltar ao painel</a>
+                <button class="btn primary" id="btnEnviar" type="submit"><i data-icon="checks"></i><span data-rotulo>Conciliar arquivos</span></button>
+            </footer>
+        </form>
+        <aside class="panel painel-guia" aria-labelledby="titulo-referencia">
+            <h2 id="titulo-referencia">Antes de conciliar</h2>
+            <dl class="lista-definicoes">
+                <div><dt>Folha de pagamento</dt><dd>Use a exportação com os eventos de uma única competência na primeira aba.</dd></div>
+                <div><dt>Pagamentos por fora</dt><dd>Inclua as abas <strong>Ricieri</strong> e <strong>BESTPONTOS</strong> na planilha complementar.</dd></div>
+                <div><dt>Resultado</dt><dd>Os lançamentos são gravados na folha e ficam disponíveis para download em JSON.</dd></div>
+            </dl>
+            <a class="link-contexto" th:href="@{/mao-de-obra/folha}">Importar uma folha consolidada <i data-icon="arrow"></i></a>
+        </aside>
+    </div>
+    <section class="panel painel-resultado" id="resultado" aria-labelledby="titulo-resultado" hidden>
+        <header class="cabecalho-resultado">
+            <div><h2 id="titulo-resultado">Resultado da conciliação</h2><p class="muted" id="totalRegistros"></p></div>
+            <button class="btn secondary" id="btnDownload" type="button"><i data-icon="download"></i>Baixar JSON</button>
+        </header>
+        <div class="table-scroll tabela-resultado" role="region" aria-label="Prévia dos registros conciliados" tabindex="0">
             <table>
-                <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Competência</th>
-                    <th>Salário</th>
-                    <th>Custo de mão de obra total</th>
-                </tr>
-                </thead>
+                <thead><tr><th scope="col">Funcionário</th><th scope="col">Competência</th><th scope="col">Salário</th><th scope="col">Custo total de mão de obra</th></tr></thead>
                 <tbody id="tabelaResultado"></tbody>
             </table>
         </div>
-
-        <p style="color:#64748b;font-size:13px">
-            Exibindo os primeiros 20 registros.
-            O JSON contém todos os registros.
-        </p>
-
-    </div>
-
-</main>
-
-<script th:inline="javascript">
-    const form = document.getElementById("uploadForm");
-    const status = document.getElementById("status");
-    const btnEnviar = document.getElementById("btnEnviar");
-    const resultado = document.getElementById("resultado");
-    const tabela = document.getElementById("tabelaResultado");
-
-    let dadosProcessados = [];
-
-    form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-
-        btnEnviar.disabled = true;
-        btnEnviar.textContent = "Processando...";
-        status.textContent = "Enviando e processando arquivo...";
-        status.className = "status";
-        resultado.classList.add("hidden");
-
-        try {
-            const formData = new FormData(form);
-
-            const response = await fetch(form.action, {
-                method: "POST",
-                headers: { [document.querySelector('meta[name="csrf-header"]').content]: document.querySelector('meta[name="csrf-token"]').content },
-                body: formData
-            });
-
-            if (!response.ok) {
-                throw new Error(
-                    "Falha no processamento. HTTP " + response.status
-                );
-            }
-
-            dadosProcessados = await response.json();
-
-            status.textContent = "Processamento concluído!";
-            status.className = "status success";
-
-            document.getElementById("totalRegistros")
-                .textContent =
-                dadosProcessados.length + " registros gerados.";
-
-            tabela.replaceChildren();
-
-            dadosProcessados.slice(0, 20).forEach(linha => {
-                const tr = document.createElement("tr");
-
-                [
-                    linha.funcionario?.nome,
-                    linha.competencia,
-                    linha.salario,
-                    linha.custoMaoObraTotal
-                ].forEach(valor => {
-                    const td = document.createElement("td");
-                    td.textContent = valor ?? "";
-                    tr.appendChild(td);
-                });
-
-                tabela.appendChild(tr);
-            });
-
-            resultado.classList.remove("hidden");
-
-        } catch (error) {
-            status.textContent = error.message;
-            status.className = "status error";
-
-        } finally {
-            btnEnviar.disabled = false;
-            btnEnviar.textContent = "Processar arquivos";
-        }
-    });
-
-    document.getElementById("btnDownload")
-        .addEventListener("click", () => {
-
-            const blob = new Blob(
-                [JSON.stringify(dadosProcessados, null, 2)],
-                { type: "application/json" }
-            );
-
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-
-            a.href = url;
-            a.download = "maodeobra_final.json";
-            a.click();
-
-            URL.revokeObjectURL(url);
-        });
-</script>
-
-</body>
-</html>
+    </section>
+    <script type="module" th:src="@{/rh/importacao.js}"></script>
+</article>
+</body></html>

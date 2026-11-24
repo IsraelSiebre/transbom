@@ -1,5 +1,6 @@
 package com.insights.rh.importacao.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,7 +16,9 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "funcionario_calculo", indexes = {
-        @Index(name = "idx_funcionario_calculo_competencia", columnList = "competencia")
+        @Index(name = "idx_funcionario_calculo_competencia", columnList = "competencia"),
+        @Index(name = "idx_folha_centro_competencia", columnList = "centro_de_custo,competencia"),
+        @Index(name = "idx_folha_cargo_competencia", columnList = "cargo,competencia")
 })
 @Getter
 @Setter
@@ -304,9 +307,11 @@ public class FuncionarioImportacao {
     @Column(name = "gratificacao_por_fora", precision = 19, scale = 2)
     private BigDecimal gratificacaoPorFora;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(name = "comissoes_por_fora", precision = 19, scale = 2)
     private BigDecimal comissoesPorFora;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(name = "valor_best_pontos", precision = 19, scale = 2)
     private BigDecimal valorBestPontos;
 

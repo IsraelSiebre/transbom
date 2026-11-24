@@ -1,0 +1,316 @@
+.pagina-gestao {
+    display: grid;
+    gap: 20px;
+    max-width: 1380px;
+    margin-inline: auto;
+}
+
+.pagina-gestao > .heading {
+    margin-bottom: 4px;
+}
+
+.pagina-gestao .btn {
+    min-height: 40px;
+}
+
+.grade-operacao {
+    display: grid;
+    grid-template-columns: minmax(0, 1.65fr) minmax(260px, 1fr);
+    align-items: start;
+    gap: 20px;
+}
+
+.painel-formulario, .painel-classificacao {
+    padding: 0;
+    gap: 0;
+}
+
+.formulario-senha {
+    width: min(100%, 640px);
+}
+
+.formulario-senha input[readonly] {
+    background: var(--surface);
+    color: var(--secondary);
+}
+
+.cabecalho-painel, .cabecalho-resultado {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cabecalho-painel {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--line);
+}
+
+.cabecalho-painel .period-stamp {
+    margin-left: auto;
+}
+
+.icone-painel, .icone-documento, .icone-concluido {
+    display: inline-grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    color: #bcbfff;
+    background: #2b2d49;
+}
+
+.campos {
+    display: grid;
+    gap: 20px;
+    padding: 24px;
+}
+
+.par-campos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.par-campos + .field-help {
+    margin-top: -12px;
+}
+
+.acoes-formulario {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--line);
+}
+
+.acoes-formulario .primary {
+    margin-left: auto;
+}
+
+.painel-guia {
+    padding: 24px;
+    gap: 16px;
+}
+
+.lista-guia, .lista-definicoes {
+    display: grid;
+    gap: 16px;
+    padding: 0;
+    margin: 0;
+}
+
+.lista-guia {
+    list-style: none;
+}
+
+.lista-guia li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.lista-guia i {
+    margin-top: 2px;
+    color: var(--secondary);
+}
+
+.lista-definicoes dt, .lista-guia strong {
+    color: #eaebf3;
+    font-weight: 550;
+}
+
+.lista-definicoes dd, .lista-guia p {
+    color: var(--secondary);
+    font-size: 13px;
+    margin: 3px 0 0;
+    line-height: 1.6;
+}
+
+.link-contexto {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    justify-self: start;
+    font-weight: 550;
+}
+
+.painel-guia .link-contexto {
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+}
+
+.campo-arquivo {
+    display: grid;
+    gap: 8px;
+}
+
+.seletor-arquivo {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 22px 18px;
+    min-height: 100px;
+    border: 1px dashed #666d8e;
+    border-radius: var(--radius);
+    background: #171c2c;
+    transition: border-color .15s;
+}
+
+.seletor-arquivo:hover, .seletor-arquivo:focus-within, .seletor-arquivo[data-selecionado] {
+    border-color: #9296ff;
+}
+
+.seletor-arquivo:focus-within {
+    outline: 2px solid #a9adff;
+    outline-offset: 3px;
+}
+
+.seletor-arquivo input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.icone-documento {
+    width: 44px;
+    height: 44px;
+    color: var(--secondary);
+    background: var(--raised);
+}
+
+.dados-arquivo {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+.dados-arquivo strong {
+    overflow-wrap: anywhere;
+    font-weight: 550;
+}
+
+.dados-arquivo small, .escolher-arquivo {
+    font-size: 12px;
+    color: var(--secondary);
+}
+
+.escolher-arquivo {
+    margin-left: auto;
+    border-radius: 9999px;
+    padding: 4px 12px;
+    border: 1px solid #525975;
+    color: var(--ink);
+}
+
+.painel-resultado {
+    gap: 18px;
+}
+
+.cabecalho-resultado {
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.tabela-resultado td:nth-child(n+3), .registro-id, .consulta-competencia input {
+    font-family: var(--mono);
+}
+
+.titulo-pendencias {
+    align-items: end;
+    flex-wrap: wrap;
+}
+
+.consulta-competencia {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 5px 8px;
+    max-width: 100%;
+}
+
+.consulta-competencia label {
+    grid-column: 1 / -1;
+    font-size: 12px;
+}
+
+.consulta-competencia input { min-height: 40px; }
+.indicadores-pendencias { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+.sem-pendencias {
+    align-items: center;
+    justify-content: center;
+    padding: clamp(32px, 5vw, 64px) 20px;
+    text-align: center;
+}
+
+.sem-pendencias p { margin-top: 5px; }
+.icone-concluido { color: #74d5dd; background: #21383f; }
+
+.controle-classificacao {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 10px 16px;
+    padding: 20px 24px;
+}
+
+.controle-classificacao .field-help { grid-column: 1 / -1; }
+.controle-classificacao .btn { min-height: 44px; }
+.tabela-classificacao th, .tabela-classificacao td { text-align: left; }
+.tabela-classificacao th:first-child, .tabela-classificacao td:first-child { padding-left: 24px; }
+.tabela-classificacao td { font-size: 13px; }
+.tabela-classificacao select { width: 100%; }
+
+.registro-id {
+    display: block;
+    color: var(--secondary);
+    font-size: 11px;
+}
+
+.situacao {
+    display: inline-block;
+    border-radius: 9999px;
+    color: #d1d2e5;
+    background: var(--raised);
+    padding: 3px 10px;
+    font-size: 12px;
+}
+
+.situacao.pronto {
+    color: #afe8ed;
+    background: #203b41;
+}
+
+@media (max-width: 1080px) {
+    .grade-operacao { grid-template-columns: minmax(0, 1.6fr) minmax(220px, 1fr); }
+    .par-campos { grid-template-columns: 1fr; }
+    .controle-classificacao { grid-template-columns: minmax(0, 1fr) auto; }
+    .controle-classificacao > .form-field:first-child { grid-column: 1 / -1; }
+}
+
+@media (max-width: 720px) {
+    .pagina-gestao, .grade-operacao { gap: 16px; }
+    .grade-operacao { grid-template-columns: minmax(0, 1fr); }
+    .campos, .cabecalho-painel, .controle-classificacao, .acoes-formulario, .painel-guia { padding: 16px; }
+    .titulo-pendencias { align-items: start; }
+    .titulo-pendencias .consulta-competencia { margin-top: 8px; }
+    .seletor-arquivo { padding: 16px 12px; gap: 10px; }
+    .escolher-arquivo { display: none; }
+    .indicadores-pendencias .kpi-heading { align-items: start; flex-direction: column; }
+    .indicadores-pendencias .kpi-value { font-size: 22px; margin-top: auto; }
+    .tabela-classificacao th:first-child, .tabela-classificacao td:first-child { padding-left: 16px; }
+}
+
+@media (max-width: 420px) {
+    .controle-classificacao { grid-template-columns: minmax(0, 1fr); }
+    .controle-classificacao .btn { justify-self: start; }
+    .indicadores-pendencias .kpi { padding: 12px 8px; }
+}
