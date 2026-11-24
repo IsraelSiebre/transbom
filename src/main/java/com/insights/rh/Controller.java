@@ -4,9 +4,6 @@ import com.insights.rh.importacao.ConciliacaoPagamentoService;
 import com.insights.rh.importacao.dadosantigos.ImportacaoFolhaExcelService;
 import com.insights.rh.importacao.model.CentroDeCusto;
 import com.insights.rh.importacao.model.FuncionarioImportacao;
-import com.insights.rh.insights.CalculoService;
-import com.insights.rh.insights.model.CalculoTotal;
-import com.insights.rh.insights.model.FuncionarioCalculo;
 import com.insights.rh.repository.FuncionarioImportacaoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -19,6 +16,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,7 +30,6 @@ import java.util.Set;
 public class Controller {
 
     private final ConciliacaoPagamentoService conciliacaoService;
-    private final CalculoService calculoService;
     private final FuncionarioImportacaoRepository importacaoRepository;
     private final ImportacaoFolhaExcelService importacaoFolhaExcelService;
 
@@ -60,22 +57,10 @@ public class Controller {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate competencia,
             Model model) {
 
-        LocalDate mes = normalizarCompetencia(competencia);
-        List<FuncionarioCalculo> todosCalculos = calculoService.calcularListaMOFuncionarios(mes);
-        List<FuncionarioCalculo> calculos = todosCalculos.stream()
-                .filter(f -> f.centroDeCusto() != null)
-                .toList();
-
-        long qntFuncionariosSemCC = todosCalculos.size() - calculos.size();
-        CalculoTotal total = calculoService.calcularTotal(calculos);
-        Map<CentroDeCusto, CalculoTotal> totalPorCentroCusto =
-                calculoService.calcularTotalPorCentroDeCusto(calculos);
-
-        model.addAttribute("calculos", calculos);
+        LocalDate mes = competencia == null ? null : competencia.withDayOfMonth(1);
         model.addAttribute("competencia", mes);
-        model.addAttribute("total", total);
-        model.addAttribute("totalPorCentroCusto", totalPorCentroCusto);
-        model.addAttribute("qntFuncionariosSemCC", qntFuncionariosSemCC);
+        model.addAttribute("qntFuncionariosSemCC", mes == null ? 0L :
+                importacaoRepository.countByCompetenciaAndCentroDeCustoIsNull(mes));
         return "rh/dashboard";
     }
 
@@ -84,9 +69,12 @@ public class Controller {
     public String funcionariosSemCc(
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate competencia,
+            @RequestParam(name = "mes", required = false)
+            @DateTimeFormat(pattern = "uuuu-MM") YearMonth mesConsultado,
             Model model) {
 
-        LocalDate mes = normalizarCompetencia(competencia);
+        LocalDate mes = competencia == null && mesConsultado != null
+                ? mesConsultado.atDay(1) : normalizarCompetencia(competencia);
         List<FuncionarioImportacao> funcionariosSemCC = importacaoRepository
                 .findAllByCompetencia(mes)
                 .stream()
@@ -162,7 +150,6 @@ public class Controller {
 
         LocalDate mes = normalizarCompetencia(competencia);
         model.addAttribute("competencia", mes);
-        model.addAttribute("calculos", calculoService.calcularListaMOFuncionarios(mes));
         return "rh/detalhamento";
     }
 

@@ -1,0 +1,20 @@
+.org-scroll { overflow: auto; max-height: 34rem }
+.heat-table { border-collapse: separate; border-spacing: 3px; font-size: .78rem }
+.heat-table th { padding: .45rem .65rem; text-align: left; white-space: nowrap }
+.heat-table tbody th { position: sticky; left: 0; background: #1a1e2d; z-index: 1 }
+.heat-cell { border: 0; border-radius: 5px; width: 100%; white-space: nowrap; padding: .65rem;
+    font: inherit; color: white; background: rgb(77 80 232 / var(--level)); cursor: pointer }
+.stack-list { display: grid; gap: .45rem }
+.stack-item { width: 100%; display: grid; align-items: center; gap: .75rem;
+    grid-template-columns: minmax(7rem,1fr) 3fr minmax(8rem,auto); text-align: left;
+    border: 0; background: transparent; padding: .35rem; font: inherit; color: white; cursor: pointer }
+.stack-item > :last-child { text-align: right; font-size: .85rem; font-variant-numeric: tabular-nums }
+.stack-track { display: flex; height: 1.2rem; align-items: stretch; overflow: hidden;
+    border-radius: 4px; background: #262c3e; font-size: .75rem }
+.stack-legend { display: flex; flex-wrap: wrap; gap: .5rem 1rem; margin: .8rem .35rem 0; color: #afafce; font-size: .78rem }
+.stack-legend span::before { display: inline-block; content: ''; width: .55rem; height: .55rem;
+    background: var(--swatch); margin-right: .3rem; border-radius: 2px }
+@media(max-width:650px) {
+    .stack-item { grid-template-columns: minmax(0,1fr) auto; gap: .3rem }
+    .stack-track { grid-column: span 2; grid-row: 2; height: .75rem }
+}

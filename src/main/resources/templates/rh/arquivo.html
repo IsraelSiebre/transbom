@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div class="campo-arquivo" th:fragment="seletor(chave, titulo, extensoes, formato)">
+    <label class="field-label" th:for="${chave}" th:text="${titulo}"></label>
+    <div class="seletor-arquivo">
+        <span class="icone-documento"><i data-icon="table"></i></span>
+        <span class="dados-arquivo">
+            <strong data-nome-arquivo>Selecione ou arraste a planilha</strong>
+            <small th:id="|${chave}-formato|" th:text="|Excel · ${formato}|"></small>
+        </span>
+        <span class="escolher-arquivo" aria-hidden="true" data-escolher>Escolher</span>
+        <input type="file" th:id="${chave}" th:name="${chave}" th:accept="${extensoes}"
+               th:attr="aria-describedby=|${chave}-formato|" required>
+    </div>
+</div>
+</body>
+</html>

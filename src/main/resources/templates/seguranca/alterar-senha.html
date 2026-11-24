@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/gestao :: pagina('Alterar minha senha', 'senha', ~{::article})}">
+<body>
+<article class="pagina-gestao">
+    <header class="heading">
+        <div><h1 id="titulo-senha">Alterar minha senha</h1><p>Confirme a senha atual e escolha a que usará no próximo acesso.</p></div>
+    </header>
+    <form class="panel painel-formulario formulario-senha" aria-labelledby="titulo-senha"
+          th:action="@{/minha-conta/senha}" method="post">
+        <div class="campos">
+            <p class="feedback" data-state="success" role="status" th:if="${sucesso}" th:text="${sucesso}"></p>
+            <p class="feedback" data-state="error" role="alert" th:if="${erro}" th:text="${erro}"></p>
+            <div class="par-campos">
+                <div class="form-field">
+                    <label for="usuario-atual">Usuário conectado</label>
+                    <input id="usuario-atual" type="text" th:value="${usuarioAtual}" autocomplete="username" readonly>
+                </div>
+                <div class="form-field">
+                    <label for="senha-atual">Senha atual</label>
+                    <input id="senha-atual" name="senhaAtual" type="password" required autocomplete="current-password">
+                </div>
+            </div>
+            <div class="par-campos">
+                <div class="form-field">
+                    <label for="nova-senha">Nova senha</label>
+                    <input id="nova-senha" name="novaSenha" type="password" required minlength="8"
+                           autocomplete="new-password" aria-describedby="ajuda-senha">
+                </div>
+                <div class="form-field">
+                    <label for="confirmacao-senha">Confirmar nova senha</label>
+                    <input id="confirmacao-senha" name="confirmacaoSenha" type="password" required minlength="8"
+                           autocomplete="new-password" aria-describedby="ajuda-senha">
+                </div>
+            </div>
+            <small id="ajuda-senha" class="field-help">Use uma senha diferente da atual, com pelo menos 8 caracteres e até 72 bytes em UTF-8.</small>
+        </div>
+        <footer class="acoes-formulario">
+            <a class="btn secondary" data-retorno-painel th:href="@{/mao-de-obra}">Voltar ao painel</a>
+            <button class="btn primary" type="submit">Salvar nova senha</button>
+        </footer>
+    </form>
+</article>
+</body></html>

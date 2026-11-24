@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" th:fragment="pagina(titulo, ativa, conteudo)">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title th:text="|${titulo} · Transbom|"></title>
+    <link rel="stylesheet" th:href="@{/rh/comet-base.css}">
+    <link rel="stylesheet" th:href="@{/rh/gestao.css}">
+    <script type="module" th:src="@{/rh/navegacao.js}"></script>
+</head>
+<body class="gestao">
+    <a class="skip" href="#conteudo">Ir para o conteúdo</a>
+    <aside th:replace="~{layout/navegacao :: lateral(${ativa})}"></aside>
+    <div class="workspace">
+        <header th:replace="~{layout/navegacao :: topo('Business Intelligence', 'Gestão', ~{})}"></header>
+        <main id="conteudo" tabindex="-1" th:insert="${conteudo}"></main>
+    </div>
+</body>
+</html>
